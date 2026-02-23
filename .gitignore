@@ -1,0 +1,39 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+*.sln.docstates
+
+## Visual Studio
+.vs/
+*.rsuser
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Ll]og/
+[Ll]ogs/
+
+## NuGet
+*.nupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+## MAUI / Android
+*.apk
+*.aab
+*.ipa
+
+## OS files
+Thumbs.db
+.DS_Store
+
+## Rider / JetBrains
+.idea/
+
+## User secrets
+secrets.json

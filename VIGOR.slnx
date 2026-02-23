@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="VIGOR/VIGOR.Shared/VIGOR.Shared.csproj" />
+  <Project Path="VIGOR/VIGOR.Web.Client/VIGOR.Web.Client.csproj" />
+  <Project Path="VIGOR/VIGOR.Web/VIGOR.Web.csproj" />
+  <Project Path="VIGOR/VIGOR/VIGOR.csproj" />
+</Solution>
