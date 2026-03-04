@@ -1,0 +1,84 @@
+@startuml
+title UC01 - Sekvensdiagram (Design-level) - Log ind (rollebaseret)
+
+actor "Personale" as User
+
+boundary "LoginView (Blazor Component)" as View
+control "AuthController" as Controller
+control "AuthService" as AuthService
+control "StartPageResolver" as Resolver
+control "NavigationService" as Nav
+
+database "Identity Store" as IdentityDb
+participant "SignInManager<User>" as SignInManager
+participant "UserManager<User>" as UserManager
+
+== Main Success Scenario ==
+
+User -> View : Indtast email+password\nKlik 'Log ind'
+View -> Controller : Login(email, password)
+
+Controller -> AuthService : SignIn(email, password)
+
+AuthService -> SignInManager : PasswordSignInAsync(email, password)
+SignInManager -> IdentityDb : Validate credentials
+IdentityDb --> SignInManager : valid
+SignInManager --> AuthService : SignInResult(Succeeded)
+
+AuthService -> UserManager : FindByEmailAsync(email)
+UserManager -> IdentityDb : Get user
+IdentityDb --> UserManager : user
+UserManager --> AuthService : user
+
+AuthService -> UserManager : GetRolesAsync(user)
+UserManager -> IdentityDb : Get roles
+IdentityDb --> UserManager : roles
+UserManager --> AuthService : roles
+
+AuthService --> Controller : AuthResult(Success, roles)
+
+Controller -> Resolver : ResolveStartRoute(roles)
+Resolver --> Controller : route
+
+Controller -> Nav : Navigate(route)
+Nav --> View : Navigation triggered
+
+Controller --> View : ShowSuccess()
+
+== Alternative Flow - Ugyldige credentials ==
+
+User -> View : Klik 'Log ind'
+View -> Controller : Login(email, password)
+Controller -> AuthService : SignIn(email, password)
+AuthService -> SignInManager : PasswordSignInAsync(email, password)
+SignInManager -> IdentityDb : Validate credentials
+IdentityDb --> SignInManager : invalid
+SignInManager --> AuthService : SignInResult(Failed)
+AuthService --> Controller : AuthResult(Rejected, "Forkert email eller adgangskode")
+Controller --> View : ShowError(errorMessage)
+
+== Alternative Flow - Manglende rolle ==
+
+User -> View : Klik 'Log ind'
+View -> Controller : Login(email, password)
+Controller -> AuthService : SignIn(email, password)
+
+AuthService -> SignInManager : PasswordSignInAsync(email, password)
+SignInManager -> IdentityDb : Validate credentials
+IdentityDb --> SignInManager : valid
+SignInManager --> AuthService : SignInResult(Succeeded)
+
+AuthService -> UserManager : FindByEmailAsync(email)
+UserManager -> IdentityDb : Get user
+IdentityDb --> UserManager : user
+UserManager --> AuthService : user
+
+AuthService -> UserManager : GetRolesAsync(user)
+UserManager -> IdentityDb : Get roles
+IdentityDb --> UserManager : roles = []
+UserManager --> AuthService : []
+
+AuthService --> Controller : AuthResult(Denied, "Du har ikke adgang. Kontakt administrator.")
+Controller --> View : ShowError(message)
+
+@enduml

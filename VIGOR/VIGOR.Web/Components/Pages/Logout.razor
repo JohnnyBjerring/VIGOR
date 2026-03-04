@@ -1,0 +1,18 @@
+@page "/logout"
+@rendermode InteractiveServer
+@using VIGOR.Shared.Interfaces.Services
+@inject IAuthStateService AuthState
+@inject NavigationManager Navigation
+
+<PageTitle>Logger ud – VIGOR</PageTitle>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await AuthState.MarkUserAsLoggedOut();
+            Navigation.NavigateTo("/login", forceLoad: true);
+        }
+    }
+}

@@ -1,9 +1,0 @@
-@page "/"
-
-<h1>Welcome to VIGOR</h1>
-
-<p>Application is running on @formFactor.GetFormFactor() — @formFactor.GetPlatform()</p>
-
-@code {
-    [Inject] private VIGOR.Shared.Interfaces.Services.IFormFactor formFactor { get; set; } = default!;
-}

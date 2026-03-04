@@ -1,41 +1,117 @@
-using VIGOR.Web.Components;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using VIGOR.Web.Data;
 using VIGOR.Web.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents()
-    .AddInteractiveWebAssemblyComponents();
+// Add VIGOR Web services (DI – Identity, Auth, Controllers, etc.)
+builder.Services.AddVigorWebServices(builder.Configuration);
 
-// Add VIGOR Web services (DI)
-builder.Services.AddVigorWebServices();
+// Swagger / OpenAPI (Development only)
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
+
+// Seed roller og testbruger
+await SeedDataAsync(app.Services);
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseWebAssemblyDebugging();
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 else
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+
 app.UseHttpsRedirection();
 
-app.UseAntiforgery();
+app.UseAuthentication();
+app.UseAuthorization();
 
-app.MapStaticAssets();
+app.MapControllers();
 
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
-    .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(
-        typeof(VIGOR.Shared._Imports).Assembly,
-        typeof(VIGOR.Web.Client._Imports).Assembly);
+// Health-check endpoint
+app.MapGet("/health", () => Results.Ok("OK"));
 
 app.Run();
+
+/// <summary>
+/// Seeder roller (Leder, Vagtansvarlig, Personale) og en testbruger ved opstart.
+/// </summary>
+static async Task SeedDataAsync(IServiceProvider serviceProvider)
+{
+    using var scope = serviceProvider.CreateScope();
+    var services = scope.ServiceProvider;
+
+    var context = services.GetRequiredService<AppDbContext>();
+    await context.Database.MigrateAsync();
+
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+
+    // Opret roller
+    string[] roleNames = ["Leder", "Vagtansvarlig", "Personale"];
+    foreach (var roleName in roleNames)
+    {
+        if (!await roleManager.RoleExistsAsync(roleName))
+        {
+            await roleManager.CreateAsync(new IdentityRole(roleName));
+        }
+    }
+
+    // Opret testbruger (Leder)
+    const string testEmail = "admin@vigor.dk";
+    const string testPassword = "Admin1234";
+    if (await userManager.FindByEmailAsync(testEmail) == null)
+    {
+        var user = new IdentityUser
+        {
+            UserName = testEmail,
+            Email = testEmail,
+            EmailConfirmed = true
+        };
+        var result = await userManager.CreateAsync(user, testPassword);
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(user, "Leder");
+        }
+    }
+
+    // Opret testbruger (Personale)
+    const string staffEmail = "personale@vigor.dk";
+    const string staffPassword = "Test1234";
+    if (await userManager.FindByEmailAsync(staffEmail) == null)
+    {
+        var user = new IdentityUser
+        {
+            UserName = staffEmail,
+            Email = staffEmail,
+            EmailConfirmed = true
+        };
+        var result = await userManager.CreateAsync(user, staffPassword);
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(user, "Personale");
+        }
+    }
+
+    // Opret testbruger UDEN rolle (til Denied-flow test)
+    const string noRoleEmail = "norole@vigor.dk";
+    const string noRolePassword = "Test1234";
+    if (await userManager.FindByEmailAsync(noRoleEmail) == null)
+    {
+        var user = new IdentityUser
+        {
+            UserName = noRoleEmail,
+            Email = noRoleEmail,
+            EmailConfirmed = true
+        };
+        await userManager.CreateAsync(user, noRolePassword);
+    }
+}
