@@ -1,6 +1,14 @@
 @inherits LayoutComponentBase
 
 <div class="page">
+    <AuthorizeView>
+        <Authorized>
+            <div style="position: absolute; top: 1rem; right: 1rem; z-index: 1000;">
+                <a href="/login" class="btn btn-sm btn-outline-secondary">Log ud (@context.User.Identity?.Name)</a>
+            </div>
+        </Authorized>
+    </AuthorizeView>
+
     <main>
         <article class="content px-4">
             @Body

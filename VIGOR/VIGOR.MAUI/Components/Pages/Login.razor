@@ -1,4 +1,6 @@
+@page "/"
 @page "/login"
+@using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Authorization
 @using VIGOR.Shared.Enums
 @using VIGOR.Shared.Interfaces.Services
@@ -6,6 +8,7 @@
 @inject NavigationManager NavManager
 @inject IAuthStateService AuthState
 @inject AuthenticationStateProvider AuthStateProvider
+@inject IStartPageResolver StartPageResolver
 
 <PageTitle>Log ind – VIGOR</PageTitle>
 
@@ -85,12 +88,20 @@
         switch (result.Status)
         {
             case AuthStatus.Success:
-                _showSuccess = true;
                 if (result.Role != null)
                 {
                     await AuthState.MarkUserAsAuthenticated(_loginModel.Email, result.Role);
+                    
+                    // Brug rollen direkte fra resultatet i stedet for at læse claims igen
+                    var startRoute = StartPageResolver.ResolveStartRoute(result.Role);
+                    _showSuccess = true;
+                    NavManager.NavigateTo(startRoute);
                 }
-                NavManager.NavigateTo("/home");
+                else
+                {
+                    _errorMessage = "Du har ikke adgang. Kontakt administrator (mangler rolle).";
+                    await AuthState.MarkUserAsLoggedOut();
+                }
                 break;
             case AuthStatus.Rejected:
             case AuthStatus.Denied:

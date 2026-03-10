@@ -33,6 +33,7 @@ public static class MauiProgram
             builder.Logging.AddProvider(new FileLoggerProvider(logPath));
 #endif
 
+			builder.Services.AddCascadingAuthenticationState();
 			builder.Services.AddAuthorizationCore();
 			builder.Services.AddScoped<VIGOR.MAUI.Services.MauiAuthStateProvider>();
 			builder.Services.AddScoped<Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider>(sp => sp.GetRequiredService<VIGOR.MAUI.Services.MauiAuthStateProvider>());

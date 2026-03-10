@@ -83,6 +83,24 @@ static async Task SeedDataAsync(IServiceProvider serviceProvider)
         }
     }
 
+    // Opret testbruger (Vagtansvarlig)
+    const string leadEmail = "vagtansvarlig@vigor.dk";
+    const string leadPassword = "Test1234";
+    if (await userManager.FindByEmailAsync(leadEmail) == null)
+    {
+        var user = new IdentityUser
+        {
+            UserName = leadEmail,
+            Email = leadEmail,
+            EmailConfirmed = true
+        };
+        var result = await userManager.CreateAsync(user, leadPassword);
+        if (result.Succeeded)
+        {
+            await userManager.AddToRoleAsync(user, "Vagtansvarlig");
+        }
+    }
+
     // Opret testbruger (Personale)
     const string staffEmail = "personale@vigor.dk";
     const string staffPassword = "Test1234";

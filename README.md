@@ -36,9 +36,9 @@ The solution is structured into multiple projects:
 | Project | Description |
 |---------|-------------|
 | **VIGOR.Shared** | Shared domain models, DTOs and interfaces |
-| **VIGOR.Web** | ASP.NET Core Web API (server-side logic & data access) |
-| **VIGOR.Web.Client** | Blazor Web client |
-| **VIGOR (MAUI)** | .NET MAUI Blazor Hybrid application |
+| **VIGOR.Web** | ASP.NET Core Web API (Pure backend backend logic & data access) |
+| **VIGOR.Web.Client** | Blazor Web client (**Reserved for future kiosk UI**) |
+| **VIGOR.MAUI** | .NET MAUI Blazor Hybrid application (Primary Client) |
 
 The architecture follows layered principles with centralized Dependency Injection configuration and separation of concerns.
 
@@ -48,14 +48,21 @@ The architecture follows layered principles with centralized Dependency Injectio
 
 - .NET 10 (LTS)
 - ASP.NET Core Web API
-- Blazor
-- .NET MAUI Blazor Hybrid
-- Entity Framework Core (planned)
+- Blazor (MAUI Hybrid)
+- .NET MAUI
+- Entity Framework Core (Sqlite)
 - Git / GitHub for version control
 
 ---
 
 ## Current Status
+
+**Iteration 1 (MAUI Migration & API Refactoring):**
+
+- [x] VIGOR.Web refactored to pure Web API
+- [x] MAUI application established as primary client
+- [x] Role-based navigation implemented in MAUI
+- [x] JWT-based authentication integrated via API
 
 **Iteration 0 (Foundation & Setup):**
 
