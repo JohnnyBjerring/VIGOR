@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="VIGOR/VIGOR.Shared/VIGOR.Shared.csproj" />
+  <Project Path="VIGOR/VIGOR.Web/VIGOR.Web.csproj" />
+  <Project Path="VIGOR/VIGOR.MAUI/VIGOR.MAUI.csproj" />
+  <!-- Reserved for future kiosk UI -->
+  <Project Path="VIGOR/VIGOR.Web.Client/VIGOR.Web.Client.csproj" />
+  <Project Path="VIGOR/VIGOR.UnitTests/VIGOR.UnitTests.csproj" />
+</Solution>

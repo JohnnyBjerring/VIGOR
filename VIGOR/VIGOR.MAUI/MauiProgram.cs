@@ -27,9 +27,13 @@ public static class MauiProgram
             builder.Logging.SetMinimumLevel(LogLevel.Trace); // Force all logs through
             builder.Logging.AddFilter("*", LogLevel.Trace);
             
-            var desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            var logPath = Path.Combine(desktopPath, "MauiBlazorLog.txt");
-            File.WriteAllText(logPath, "Starting MAUI App...\n"); // clear old logs
+            var tempPath = Path.GetTempPath();
+            var logPath = Path.Combine(tempPath, "MauiBlazorLog.txt");
+            try 
+            { 
+                File.WriteAllText(logPath, "Starting MAUI App...\n"); 
+                System.Diagnostics.Debug.WriteLine($"Log file: {logPath}");
+            } catch { } // Don't crash loading if logs fail
             builder.Logging.AddProvider(new FileLoggerProvider(logPath));
 #endif
 
@@ -49,8 +53,12 @@ public static class MauiProgram
 			// Catch async/global exceptions that happen *after* CreateMauiApp completes
 			AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
 			{
-				var executionPath = AppDomain.CurrentDomain.BaseDirectory;
-				File.WriteAllText(Path.Combine(executionPath, "MauiGlobalCrashLog.txt"), args.ExceptionObject.ToString());
+				try
+				{
+					var tempPath = Path.Combine(Path.GetTempPath(), "MauiGlobalCrashLog.txt");
+					File.WriteAllText(tempPath, args.ExceptionObject.ToString());
+				}
+				catch { }
 				if (Microsoft.Maui.Controls.Application.Current?.MainPage != null)
 				{
 					Microsoft.Maui.ApplicationModel.MainThread.BeginInvokeOnMainThread(() =>
@@ -60,13 +68,22 @@ public static class MauiProgram
 				}
 			};
 
+			System.Diagnostics.Debug.WriteLine("MAUI App is built and returning...");
 			return builder.Build();
 		}
 		catch (Exception ex)
 		{
-			// MAUI Windows apps often detach from the console. Write the error to a physical file so we can read it!
-			var executionPath = AppDomain.CurrentDomain.BaseDirectory;
-			File.WriteAllText(Path.Combine(executionPath, "MauiCrashLog.txt"), ex.ToString());
+			// Safe logging to avoid crashes during logging
+			try
+			{
+				var tempPath = Path.Combine(Path.GetTempPath(), "MauiCrashLog.txt");
+				File.WriteAllText(tempPath, ex.ToString());
+				System.Diagnostics.Debug.WriteLine($"Maui crash log written to: {tempPath}");
+			}
+			catch 
+			{
+				System.Diagnostics.Debug.WriteLine("CRITICAL ERROR: Failed to write crash log! " + ex.Message);
+			}
 			throw;
 		}
 	}

@@ -1,0 +1,113 @@
+@startuml
+title DCD - UC01 Log ind (rollebaseret)
+
+skinparam classAttributeIconSize 0
+
+' ===== Interfaces (DI contracts) =====
+interface IAuthService {
+  +SignIn(email: string, password: string): AuthResult
+}
+
+interface IStartPageResolver {
+  +ResolveStartRoute(role: Role): string
+}
+
+interface INavigationService {
+  +Navigate(route: string): void
+}
+
+' ===== Controller + View =====
+class AuthController {
+  -authService: IAuthService
+  -resolver: IStartPageResolver
+  -navigation: INavigationService
+  +Login(email: string, password: string): void
+}
+
+class LoginView {
+  +OnLoginClicked(email: string, password: string): void
+  +ShowError(message: string): void
+  +ShowSuccess(): void
+}
+
+' ===== Application service =====
+class AuthService {
+  -signInManager: SignInManager
+  -userManager: UserManager
+  +SignIn(email: string, password: string): AuthResult
+}
+
+' ===== Supporting components =====
+class StartPageResolver {
+  +ResolveStartRoute(role: Role): string
+}
+
+class NavigationService {
+  +Navigate(route: string): void
+}
+
+' ===== Identity framework abstractions (external) =====
+class SignInManager <<external>> {
+  +PasswordSignInAsync(email: string, password: string): SignInResult
+}
+
+class UserManager <<external>> {
+  +FindByEmailAsync(email: string): IdentityUser
+  +GetRolesAsync(user: IdentityUser): Role
+}
+
+class SignInResult <<external>> {
+  +Succeeded: bool
+}
+
+' ===== Domain / Model =====
+class IdentityUser {
+  +Id: string
+  +Email: string
+  +Role: Role
+}
+
+class Employee {
+  +EmployeeId: int
+  +Name: string
+}
+
+class Role {
+  +RoleId: int
+  +Name: string
+  +Level: int
+}
+
+class AuthResult {
+  +Status: AuthStatus
+  +Message: string
+  +Role: Role
+}
+
+enum AuthStatus {
+  Success
+  Rejected
+  Denied
+}
+
+' ===== Relationships =====
+
+LoginView --> AuthController : calls
+AuthController ..> IAuthService
+AuthController ..> IStartPageResolver
+AuthController ..> INavigationService
+
+AuthService ..|> IAuthService
+StartPageResolver ..|> IStartPageResolver
+NavigationService ..|> INavigationService
+
+AuthService --> SignInManager
+AuthService --> UserManager
+
+AuthResult --> AuthStatus
+AuthResult --> Role
+
+Employee "1" -- "1" IdentityUser
+IdentityUser "0..*" -- "1" Role : assigned
+
+@enduml

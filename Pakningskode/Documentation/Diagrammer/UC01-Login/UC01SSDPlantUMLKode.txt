@@ -1,0 +1,26 @@
+@startuml
+title SSD - UC01 Log ind (rollebaseret)
+
+actor Personale
+participant "VIGOR System" as System
+
+== Main Success Scenario ==
+
+Personale -> System : enterCredentials(email, password)
+System --> Personale : navigateToStartPage()
+
+== Alternative Flow - Ugyldige credentials ==
+
+Personale -> System : enterCredentials(email, password)
+System --> Personale : showLoginError(errorMessage)
+
+== Alternative Flow - Manglende rolle ==
+
+Personale -> System : enterCredentials(email, password)
+System --> Personale : showAccessDenied(message)
+
+== Alternative Flow - Konto låst ==
+
+Personale -> System : enterCredentials(email, password)
+System --> Personale : showLoginError(lockoutMessage)
+@enduml

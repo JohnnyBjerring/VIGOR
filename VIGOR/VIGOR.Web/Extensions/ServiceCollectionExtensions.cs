@@ -56,6 +56,7 @@ namespace VIGOR.Web.Extensions
             // Application services (DI – interfaces)
             services.AddScoped<IIdentityGateway, IdentityGateway>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ICitizenService, CitizenService>();
 
             // API Controllers
             services.AddControllers();

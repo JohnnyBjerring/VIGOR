@@ -1,0 +1,152 @@
+@startuml
+title UC01 - Sekvensdiagram (Design-level) - Log ind (rollebaseret)
+
+actor "Personale" as User
+
+box "Client (MAUI)"
+boundary "LoginView\n(MAUI Blazor Component)" as View
+control "IAuthService\n(ApiAuthService)" as ClientAuthService
+control "IAuthStateService\n(MauiAuthStateProvider)" as AuthState
+control "IStartPageResolver\n(StartPageResolver)" as Resolver
+control "NavigationManager" as Nav
+end box
+
+box "Server (Web API)"
+control "AuthApiController\n(Web API)" as ApiController
+control "IAuthService\n(AuthService)" as ServerAuthService
+control "IIdentityGateway\n(IdentityGateway)" as IdentityGateway
+end box
+
+box "Infrastructure (Identity)"
+participant "SignInManager<IdentityUser>" as SignInManager
+participant "UserManager<IdentityUser>" as UserManager
+database "Identity Store" as IdentityDb
+end box
+
+== Main Success Scenario ==
+
+User -> View : Indtast email + password\nKlik 'Log ind'
+View -> ClientAuthService : SignInAsync(email, password)
+
+ClientAuthService -> ApiController : POST /api/auth/login\nLoginRequest
+ApiController -> ServerAuthService : SignInAsync(email, password)
+
+ServerAuthService -> IdentityGateway : AuthenticateAsync(email, password)
+
+IdentityGateway -> UserManager : FindByEmailAsync(email)
+UserManager -> IdentityDb : Find user
+IdentityDb --> UserManager : user
+UserManager --> IdentityGateway : user
+
+IdentityGateway -> SignInManager : CheckPasswordSignInAsync(user, password, true)
+SignInManager -> IdentityDb : Validate credentials
+IdentityDb --> SignInManager : success
+SignInManager --> IdentityGateway : SignInResult(Succeeded)
+
+IdentityGateway -> UserManager : GetRolesAsync(user)
+UserManager -> IdentityDb : Get roles
+IdentityDb --> UserManager : roles
+UserManager --> IdentityGateway : roles
+
+IdentityGateway --> ServerAuthService : AuthResult(Success, role)
+ServerAuthService --> ApiController : AuthResult(Success, role)
+
+ApiController -> ApiController : GenerateJwtToken(email, role.Name)
+ApiController --> ClientAuthService : 200 OK + AuthResponse(Token, AuthResult)
+ClientAuthService --> View : AuthResult(Success, role)
+
+View -> AuthState : MarkUserAsAuthenticated(email, role)
+AuthState --> View : Auth state updated
+
+View -> Resolver : ResolveStartRoute(role)
+Resolver --> View : route
+
+View -> Nav : NavigateTo(route)
+Nav --> View : Navigation triggered
+
+== Alternative Flow - Ugyldige credentials ==
+
+User -> View : Klik 'Log ind'
+View -> ClientAuthService : SignInAsync(email, password)
+ClientAuthService -> ApiController : POST /api/auth/login\nLoginRequest
+ApiController -> ServerAuthService : SignInAsync(email, password)
+ServerAuthService -> IdentityGateway : AuthenticateAsync(email, password)
+
+IdentityGateway -> UserManager : FindByEmailAsync(email)
+UserManager -> IdentityDb : Find user
+IdentityDb --> UserManager : null / user
+UserManager --> IdentityGateway : null / user
+
+alt Bruger findes ikke
+    IdentityGateway --> ServerAuthService : AuthResult(Rejected, "Forkert email eller adgangskode")
+else Forkert password
+    IdentityGateway -> SignInManager : CheckPasswordSignInAsync(user, password, true)
+    SignInManager -> IdentityDb : Validate credentials
+    IdentityDb --> SignInManager : failed
+    SignInManager --> IdentityGateway : SignInResult(Failed)
+    IdentityGateway --> ServerAuthService : AuthResult(Rejected, "Forkert email eller adgangskode")
+end
+
+ServerAuthService --> ApiController : AuthResult(Rejected, message)
+ApiController --> ClientAuthService : 401 Unauthorized + AuthResponse("", AuthResult)
+ClientAuthService --> View : AuthResult(Rejected, message)
+
+View --> User : ShowError(message)
+
+== Alternative Flow - Konto låst ==
+
+User -> View : Klik 'Log ind'
+View -> ClientAuthService : SignInAsync(email, password)
+ClientAuthService -> ApiController : POST /api/auth/login\nLoginRequest
+ApiController -> ServerAuthService : SignInAsync(email, password)
+ServerAuthService -> IdentityGateway : AuthenticateAsync(email, password)
+
+IdentityGateway -> UserManager : FindByEmailAsync(email)
+UserManager -> IdentityDb : Find user
+IdentityDb --> UserManager : user
+UserManager --> IdentityGateway : user
+
+IdentityGateway -> SignInManager : CheckPasswordSignInAsync(user, password, true)
+SignInManager -> IdentityDb : Validate credentials
+IdentityDb --> SignInManager : locked out
+SignInManager --> IdentityGateway : SignInResult(LockedOut)
+
+IdentityGateway --> ServerAuthService : AuthResult(Rejected, "For mange mislykkede forsøg. Prøv igen om 5 minutter.")
+ServerAuthService --> ApiController : AuthResult(Rejected, message)
+ApiController --> ClientAuthService : 401 Unauthorized + AuthResponse("", AuthResult)
+ClientAuthService --> View : AuthResult(Rejected, message)
+
+View --> User : ShowError(message)
+
+== Alternative Flow - Manglende rolle ==
+
+User -> View : Klik 'Log ind'
+View -> ClientAuthService : SignInAsync(email, password)
+ClientAuthService -> ApiController : POST /api/auth/login\nLoginRequest
+ApiController -> ServerAuthService : SignInAsync(email, password)
+ServerAuthService -> IdentityGateway : AuthenticateAsync(email, password)
+
+IdentityGateway -> UserManager : FindByEmailAsync(email)
+UserManager -> IdentityDb : Find user
+IdentityDb --> UserManager : user
+UserManager --> IdentityGateway : user
+
+IdentityGateway -> SignInManager : CheckPasswordSignInAsync(user, password, true)
+SignInManager -> IdentityDb : Validate credentials
+IdentityDb --> SignInManager : success
+SignInManager --> IdentityGateway : SignInResult(Succeeded)
+
+IdentityGateway -> UserManager : GetRolesAsync(user)
+UserManager -> IdentityDb : Get roles
+IdentityDb --> UserManager : []
+UserManager --> IdentityGateway : []
+
+IdentityGateway --> ServerAuthService : AuthResult(Denied, "Du har ikke adgang. Kontakt administrator.")
+ServerAuthService --> ApiController : AuthResult(Denied, message)
+ApiController --> ClientAuthService : 401 Unauthorized + AuthResponse("", AuthResult)
+ClientAuthService --> View : AuthResult(Denied, message)
+
+View -> AuthState : MarkUserAsLoggedOut()
+AuthState --> View : Auth state cleared
+View --> User : ShowError(message)
+@enduml

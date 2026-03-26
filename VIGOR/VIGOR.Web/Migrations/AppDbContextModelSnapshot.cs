@@ -209,6 +209,41 @@ namespace VIGOR.Web.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("VIGOR.Shared.Models.Citizen", b =>
+                {
+                    b.Property<int>("CitizenId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("CitizenId");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.ToTable("Citizens");
+                });
+
+            modelBuilder.Entity("VIGOR.Shared.Models.Department", b =>
+                {
+                    b.Property<int>("DepartmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("DepartmentId");
+
+                    b.ToTable("Departments");
+                });
+
             modelBuilder.Entity("VIGOR.Shared.Models.Employee", b =>
                 {
                     b.Property<int>("EmployeeId")
@@ -280,6 +315,22 @@ namespace VIGOR.Web.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("VIGOR.Shared.Models.Citizen", b =>
+                {
+                    b.HasOne("VIGOR.Shared.Models.Department", "Department")
+                        .WithMany("Citizens")
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Department");
+                });
+
+            modelBuilder.Entity("VIGOR.Shared.Models.Department", b =>
+                {
+                    b.Navigation("Citizens");
                 });
 #pragma warning restore 612, 618
         }

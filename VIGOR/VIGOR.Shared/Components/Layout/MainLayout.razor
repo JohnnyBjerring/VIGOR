@@ -1,17 +1,54 @@
 @inherits LayoutComponentBase
+@inject VIGOR.Shared.Interfaces.Services.IAuthStateService AuthStateService
+@inject NavigationManager NavigationManager
 
-<div class="page">
-    <AuthorizeView>
-        <Authorized>
-            <div style="position: absolute; top: 1rem; right: 1rem; z-index: 1000;">
-                <a href="/login" class="btn btn-sm btn-outline-secondary">Log ud (@context.User.Identity?.Name)</a>
-            </div>
-        </Authorized>
-    </AuthorizeView>
+<div class="d-flex w-100" style="min-height: 100vh;">
+    <!-- Left Sidebar -->
+    <nav class="bg-light border-end d-flex flex-column" style="width: 250px;">
+        <div class="p-3 border-bottom">
+            <h5 class="m-0">VIGOR Portalen</h5>
+        </div>
+        
+        <div class="flex-grow-1 p-3">
+            <ul class="nav flex-column">
+                <li class="nav-item mb-2">
+                    <NavLink class="nav-link text-dark" href="" Match="NavLinkMatch.All">Hjem</NavLink>
+                </li>
+                <li class="nav-item mb-2">
+                    <NavLink class="nav-link text-dark" href="citizens">Borgere</NavLink>
+                </li>
+            </ul>
+        </div>
 
-    <main>
-        <article class="content px-4">
+        <div class="p-3 border-top mt-auto">
+            <AuthorizeView Context="authContext">
+                <Authorized>
+                    <div class="mb-2 text-muted small">Logget ind som: <br/> <strong>@authContext.User.Identity?.Name</strong></div>
+                    <button class="btn btn-outline-danger w-100" @onclick="Logout">Log ud</button>
+                </Authorized>
+            </AuthorizeView>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="flex-grow-1 d-flex flex-column" style="overflow-y: auto;">
+        <!-- Top Header -->
+        <header class="p-3 border-bottom bg-white d-flex align-items-center" style="height: 60px;">
+            <span class="text-muted">System Dashboard</span>
+        </header>
+
+        <!-- Content Area -->
+        <main class="flex-grow-1 p-4 bg-white">
             @Body
-        </article>
-    </main>
+        </main>
+    </div>
 </div>
+
+@code {
+    private async Task Logout()
+    {
+        await AuthStateService.MarkUserAsLoggedOut();
+        NavigationManager.NavigateTo("/login", forceLoad: true);
+    }
+}
+

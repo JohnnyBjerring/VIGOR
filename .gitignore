@@ -37,3 +37,4 @@ Thumbs.db
 
 ## User secrets
 secrets.json
+*.zip

@@ -1,0 +1,29 @@
+@* @page "/" *@
+@* @page "/home" *@
+@inject NavigationManager Navigation
+
+<PageTitle>VIGOR</PageTitle>
+
+@if (_isHome)
+{
+    <h3>Hjem</h3>
+    <p>Velkommen til VIGOR. Denne side er under opbygning.</p>
+    <a href="/login" class="btn btn-outline-danger mt-3">Log ud</a>
+}
+
+@code {
+    private bool _isHome;
+
+    protected override void OnInitialized()
+    {
+        var uri = new Uri(Navigation.Uri);
+        if (uri.AbsolutePath.Equals("/home", StringComparison.OrdinalIgnoreCase))
+        {
+            _isHome = true;
+        }
+        else
+        {
+            Navigation.NavigateTo("/login");
+        }
+    }
+}

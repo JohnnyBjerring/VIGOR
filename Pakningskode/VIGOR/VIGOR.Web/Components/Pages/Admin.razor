@@ -1,0 +1,39 @@
+@page "/admin"
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+
+<PageTitle>Admin – VIGOR</PageTitle>
+
+@if (_isAuthenticated)
+{
+    <div class="container mt-4">
+        <h1>Admin</h1>
+        <p>Velkommen til administrationspanelet.</p>
+        <hr />
+        <a href="/logout" class="btn btn-outline-secondary">Log ud</a>
+    </div>
+}
+
+@code {
+    private bool _isAuthenticated;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            _isAuthenticated = authState.User.Identity?.IsAuthenticated ?? false;
+
+            if (!_isAuthenticated)
+            {
+                Navigation.NavigateTo("/login", forceLoad: true);
+            }
+            else
+            {
+                StateHasChanged();
+            }
+        }
+    }
+}
