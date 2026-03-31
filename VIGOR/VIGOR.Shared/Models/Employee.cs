@@ -10,5 +10,8 @@ namespace VIGOR.Shared.Models
 
         // FK til IdentityUser
         public string IdentityUserId { get; set; } = string.Empty;
+
+        // FK til Department
+        public int? DepartmentId { get; set; }
     }
 }
