@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,7 +11,7 @@ namespace VIGOR.Web.Controllers.Api
 {
     [ApiController]
     [Route("api/citizens")]
-    [Authorize(Roles = "Leder,Vagtansvarlig,Personale")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Leder,Vagtansvarlig,Personale")]
     public class CitizensApiController : ControllerBase
     {
         private readonly ICitizenService _citizenService;
