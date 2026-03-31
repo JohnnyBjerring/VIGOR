@@ -24,7 +24,7 @@ namespace VIGOR.MAUI.Services
                     
                     if (jwtToken.ValidTo > DateTime.UtcNow)
                     {
-                        var identity = new ClaimsIdentity(jwtToken.Claims, "jwt");
+                        var identity = new ClaimsIdentity(jwtToken.Claims, "jwt", ClaimTypes.Email, ClaimTypes.Role);
                         _currentUser = new ClaimsPrincipal(identity);
                     }
                     else
@@ -49,7 +49,7 @@ namespace VIGOR.MAUI.Services
             {
                 var handler = new JwtSecurityTokenHandler();
                 var jwtToken = handler.ReadJwtToken(token);
-                var identity = new ClaimsIdentity(jwtToken.Claims, "jwt");
+                var identity = new ClaimsIdentity(jwtToken.Claims, "jwt", ClaimTypes.Email, ClaimTypes.Role);
                 _currentUser = new ClaimsPrincipal(identity);
             }
             else

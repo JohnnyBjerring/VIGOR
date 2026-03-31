@@ -50,7 +50,11 @@ public static class MauiProgram
 			
 			// Note: For Android Emulator change localhost to 10.0.2.2
 			var baseAddress = DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5249/" : "http://localhost:5249/";
-			builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(baseAddress) });
+			builder.Services.AddScoped(sp => 
+			{
+			    var handler = new VIGOR.MAUI.Services.MauiAuthHttpHandler { InnerHandler = new HttpClientHandler() };
+			    return new HttpClient(handler) { BaseAddress = new Uri(baseAddress) };
+			});
 
 			// Catch async/global exceptions that happen *after* CreateMauiApp completes
 			AppDomain.CurrentDomain.UnhandledException += (sender, args) =>
