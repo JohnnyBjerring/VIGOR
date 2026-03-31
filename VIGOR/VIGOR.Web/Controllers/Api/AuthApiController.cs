@@ -29,7 +29,7 @@ namespace VIGOR.Web.Controllers.Api
 
             if (result.Status == AuthStatus.Success && result.Role != null)
             {
-                var token = GenerateJwtToken(request.Email, result.Role.Name);
+                var token = GenerateJwtToken(result.UserId, request.Email, result.Role.Name);
                 return Ok(new AuthResponse { Token = token, Result = result });
             }
 
@@ -37,7 +37,7 @@ namespace VIGOR.Web.Controllers.Api
             return Unauthorized(new AuthResponse { Token = string.Empty, Result = result });
         }
 
-        private string GenerateJwtToken(string email, string role)
+        private string GenerateJwtToken(string userId, string email, string role)
         {
             var jwtSettings = _configuration.GetSection("JwtSettings");
             var secretKey = jwtSettings["Secret"]!;
@@ -47,6 +47,7 @@ namespace VIGOR.Web.Controllers.Api
 
             var claims = new[]
             {
+                new Claim(ClaimTypes.NameIdentifier, userId),
                 new Claim(JwtRegisteredClaimNames.Sub, email),
                 new Claim(JwtRegisteredClaimNames.Email, email),
                 new Claim(ClaimTypes.Role, role),

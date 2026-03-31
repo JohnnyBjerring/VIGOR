@@ -76,6 +76,7 @@ namespace VIGOR.Web.Services
             {
                 Status = AuthStatus.Success,
                 Message = "Login lykkedes",
+                UserId = user.Id,
                 Role = role
             };
         }

@@ -11,6 +11,7 @@ namespace VIGOR.Shared.DTOs
     {
         public AuthStatus Status { get; set; }
         public string Message { get; set; } = string.Empty;
+        public string UserId { get; set; } = string.Empty;
         public Role? Role { get; set; }
     }
 }
