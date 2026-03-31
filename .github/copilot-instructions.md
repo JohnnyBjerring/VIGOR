@@ -10,3 +10,4 @@
 - Use shared models located in `VIGOR.Shared.Models`.
 - Maintain separation of shared models and interfaces.
 - Adhere to iterative Scrum+XP methodologies.
+- Version the app using 0.Major.Minor.Buildversion format. Automatically bump the Buildversion for every update and update it in `MainLayout.razor` (e.g. `Version 0.2.1.X alpha`).

@@ -18,6 +18,11 @@ namespace VIGOR.Shared.Models
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
+        /// Borgerens status (f.eks. Aktiv, Inaktiv).
+        /// </summary>
+        public string Status { get; set; } = "Aktiv";
+
+        /// <summary>
         /// FK til den afdeling (Department) borgeren tilhører.
         /// Hver borger skal tilhøre præcis én afdeling i iteration 2.
         /// </summary>

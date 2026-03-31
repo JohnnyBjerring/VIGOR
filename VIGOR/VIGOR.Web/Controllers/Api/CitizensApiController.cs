@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading;
 using VIGOR.Shared.Interfaces.Services;
@@ -6,6 +7,7 @@ namespace VIGOR.Web.Controllers.Api
 {
     [ApiController]
     [Route("api/citizens")]
+    [Authorize(Roles = "Leder,Vagtansvarlig,Personale")]
     public class CitizensApiController : ControllerBase
     {
         private readonly ICitizenService _citizenService;

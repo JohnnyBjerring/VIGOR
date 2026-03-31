@@ -1,54 +1,78 @@
 @inherits LayoutComponentBase
 @inject VIGOR.Shared.Interfaces.Services.IAuthStateService AuthStateService
+@inject VIGOR.Shared.Interfaces.Services.IStartPageResolver StartPageResolver
 @inject NavigationManager NavigationManager
 
 <div class="d-flex w-100" style="min-height: 100vh;">
     <!-- Left Sidebar -->
-    <nav class="bg-light border-end d-flex flex-column" style="width: 250px;">
-        <div class="p-3 border-bottom">
-            <h5 class="m-0">VIGOR Portalen</h5>
-        </div>
-        
-        <div class="flex-grow-1 p-3">
-            <ul class="nav flex-column">
-                <li class="nav-item mb-2">
-                    <NavLink class="nav-link text-dark" href="" Match="NavLinkMatch.All">Hjem</NavLink>
-                </li>
-                <li class="nav-item mb-2">
-                    <NavLink class="nav-link text-dark" href="citizens">Borgere</NavLink>
-                </li>
-            </ul>
-        </div>
+    <AuthorizeView Context="authContext">
+        <Authorized>
+            <nav class="bg-white border-end d-flex flex-column" style="width: 250px;">
+                <div class="p-4">
+                    <h4 class="m-0 fw-bold">Menu</h4>
+                </div>
+                
+                <div class="flex-grow-1 p-3">
+                    <div class="mb-3">
+                        <NavLink class="btn btn-outline-dark w-100 text-start" href="@GetHomeLink(authContext.User)" Match="NavLinkMatch.All">Hjem</NavLink>
+                    </div>
+                    <div class="mb-3">
+                        <NavLink class="btn btn-outline-dark w-100 text-start" href="citizens">Borgere</NavLink>
+                    </div>
 
-        <div class="p-3 border-top mt-auto">
-            <AuthorizeView Context="authContext">
-                <Authorized>
-                    <div class="mb-2 text-muted small">Logget ind som: <br/> <strong>@authContext.User.Identity?.Name</strong></div>
-                    <button class="btn btn-outline-danger w-100" @onclick="Logout">Log ud</button>
-                </Authorized>
-            </AuthorizeView>
-        </div>
-    </nav>
+                    <div class="mt-4 ms-2 text-muted small">
+                        Version 0.2.1.4 alpha
+                    </div>
+                </div>
+
+                <div class="p-3 mt-auto">
+                    <button class="btn btn-outline-dark w-100" @onclick="Logout">Log ud</button>
+                </div>
+            </nav>
+        </Authorized>
+    </AuthorizeView>
 
     <!-- Main Content -->
     <div class="flex-grow-1 d-flex flex-column" style="overflow-y: auto;">
         <!-- Top Header -->
-        <header class="p-3 border-bottom bg-white d-flex align-items-center" style="height: 60px;">
-            <span class="text-muted">System Dashboard</span>
-        </header>
+        <AuthorizeView>
+            <Authorized>
+                <header class="p-3 border-bottom bg-white d-flex align-items-center justify-content-center" style="height: 60px;">
+                    <h3 class="m-0 fw-bold">VIGOR</h3>
+                </header>
+            </Authorized>
+        </AuthorizeView>
 
         <!-- Content Area -->
-        <main class="flex-grow-1 p-4 bg-white">
-            @Body
-        </main>
+        <AuthorizeView>
+            <Authorized>
+                <main class="flex-grow-1 p-4 bg-white">
+                    @Body
+                </main>
+            </Authorized>
+            <NotAuthorized>
+                <main class="flex-grow-1 p-0 m-0 w-100 h-100">
+                    @Body
+                </main>
+            </NotAuthorized>
+        </AuthorizeView>
     </div>
 </div>
 
 @code {
+    private string GetHomeLink(System.Security.Claims.ClaimsPrincipal user)
+    {
+        var roleName = user.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value 
+                        ?? user.FindFirst("role")?.Value 
+                        ?? "Personale";
+
+        var role = new VIGOR.Shared.Models.Role { Name = roleName };
+        return StartPageResolver.ResolveStartRoute(role);
+    }
+
     private async Task Logout()
     {
         await AuthStateService.MarkUserAsLoggedOut();
         NavigationManager.NavigateTo("/login", forceLoad: true);
     }
 }
-

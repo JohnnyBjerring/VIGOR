@@ -1,6 +1,7 @@
 using System;
 using System.Net.Http;
 using VIGOR.Shared.Interfaces.Services;
+using VIGOR.Shared.Services;
 using VIGOR.Web.Client.Services;
 
 namespace VIGOR.Web.Client.Extensions

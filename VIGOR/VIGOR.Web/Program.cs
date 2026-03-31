@@ -132,4 +132,23 @@ static async Task SeedDataAsync(IServiceProvider serviceProvider)
         };
         await userManager.CreateAsync(user, noRolePassword);
     }
+
+    // Opret test data (Afdelinger og Borgere)
+    if (!await context.Departments.AnyAsync())
+    {
+        var department1 = new VIGOR.Shared.Models.Department { Name = "Afdeling A" };
+        var department2 = new VIGOR.Shared.Models.Department { Name = "Afdeling B" };
+
+        context.Departments.AddRange(department1, department2);
+        await context.SaveChangesAsync();
+
+        context.Citizens.AddRange(
+            new VIGOR.Shared.Models.Citizen { Name = "Jens Hansen", Status = "Aktiv", DepartmentId = department1.DepartmentId },
+            new VIGOR.Shared.Models.Citizen { Name = "Anna Nielsen", Status = "Aktiv", DepartmentId = department1.DepartmentId },
+            new VIGOR.Shared.Models.Citizen { Name = "Ole Jensen", Status = "Inaktiv", DepartmentId = department1.DepartmentId },
+            new VIGOR.Shared.Models.Citizen { Name = "Peter Møller", Status = "Aktiv", DepartmentId = department2.DepartmentId },
+            new VIGOR.Shared.Models.Citizen { Name = "Mette Poulsen", Status = "Inaktiv", DepartmentId = department2.DepartmentId }
+        );
+        await context.SaveChangesAsync();
+    }
 }

@@ -2,7 +2,7 @@ using System.Net.Http.Json;
 using VIGOR.Shared.Interfaces.Services;
 using VIGOR.Shared.Models;
 
-namespace VIGOR.Web.Client.Services
+namespace VIGOR.Shared.Services
 {
     // Minimal client-side ICitizenService used by the WebAssembly/MAUI client to call the existing Web API.
     // Keeps logic simple for iteration 2: only implements GetCitizensByDepartmentAsync.

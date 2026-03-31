@@ -1,0 +1,126 @@
+@page "/citizens"
+@page "/citizens/{DepartmentId:int}"
+@using VIGOR.Shared.Models
+@inject VIGOR.Shared.Interfaces.Services.ICitizenService CitizenService
+@inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Borgeroversigt</PageTitle>
+
+<div class="row align-items-center mb-4">
+    <div class="col-md-6">
+        <h2 class="mb-0">Borgeroversigt</h2>
+    </div>
+    <div class="col-md-6 text-end small">
+        <span class="me-4 pr-3">Bruger: <strong>@_userName</strong></span>
+        <span>Afdeling: <strong>@_departmentName</strong></span>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <label for="search" class="form-label mb-1 fw-bold">Søg borger</label>
+        <div class="d-flex gap-2" style="max-width: 400px;">
+            <input type="text" id="search" class="form-control border-dark" @bind="_searchTerm" @bind:event="oninput" />
+        </div>
+    </div>
+</div>
+
+<div class="border border-dark rounded p-0" style="min-height: 400px; background-color: #fff;">
+    @if (_loading)
+    {
+        <div class="p-4"><p>Indlæser borgere...</p></div>
+    }
+    else if (_error)
+    {
+        <div class="p-4 text-center mt-5 text-danger">Der opstod en fejl ved indlæsning: @_errorMessage</div>
+    }
+    else if (!_filteredCitizens.Any())
+    {
+        <div class="p-4 text-center mt-5 pt-5 pb-5">
+            <p>Hvis der ikke findes borgere på afdelingen, vises beskeden her.</p>
+        </div>
+    }
+    else
+    {
+        <table class="table table-borderless m-0">
+            <thead class="border-bottom border-dark">
+                <tr>
+                    <th class="p-3 border-end border-dark">Navn</th>
+                    <th class="p-3 border-end border-dark" style="width: 15rem;">Borger-ID</th>
+                    <th class="p-3 border-end border-dark" style="width: 15rem;">Status</th>
+                    <th class="p-3" style="width: 15rem;">Handling</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in _filteredCitizens)
+                {
+                    <tr class="border-bottom">
+                        <td class="p-3">@c.Name</td>
+                        <td class="p-3">@c.CitizenId</td>
+                        <td class="p-3">@c.Status</td>
+                        <td class="p-3">
+                            <button class="btn btn-outline-dark btn-sm px-4">Åbn</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int? DepartmentId { get; set; }
+
+    private bool _loading = true;
+    private bool _error = false;
+    private string _errorMessage = "";
+    private IEnumerable<Citizen> _citizens = Enumerable.Empty<Citizen>();
+    private string _searchTerm = "";
+
+    private string _userName = "";
+    private string _departmentName = "";
+
+    private IEnumerable<Citizen> _filteredCitizens => 
+        string.IsNullOrWhiteSpace(_searchTerm) 
+            ? _citizens 
+            : _citizens.Where(c => c.Name.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase));
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        _userName = authState.User.Identity?.Name ?? "Ukendt bruger";
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        _loading = true;
+        _error = false;
+
+        try
+        {
+            var currentDept = DepartmentId ?? 1;
+            
+            // Hardcode department name for now to fit wireframe format
+            _departmentName = currentDept == 1 ? "Afdeling A" : (currentDept == 2 ? "Afdeling B" : "Syd");
+
+            _citizens = await CitizenService.GetCitizensByDepartmentAsync(currentDept);
+        }
+        catch (Exception ex)
+        {
+            _error = true;
+            _errorMessage = ex.Message;
+            _citizens = Enumerable.Empty<Citizen>();
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+}
