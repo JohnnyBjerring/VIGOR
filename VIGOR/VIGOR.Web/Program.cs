@@ -150,5 +150,24 @@ static async Task SeedDataAsync(IServiceProvider serviceProvider)
             new VIGOR.Shared.Models.Citizen { Name = "Mette Poulsen", Status = "Inaktiv", DepartmentId = department2.DepartmentId }
         );
         await context.SaveChangesAsync();
+
+        // Opret test medarbejdere, knyttet til afdelinger
+        var adminUser = await userManager.FindByEmailAsync(testEmail);
+        var leadUser = await userManager.FindByEmailAsync(leadEmail);
+        var staffUser = await userManager.FindByEmailAsync(staffEmail);
+
+        if (adminUser != null && !await context.Employees.AnyAsync(e => e.IdentityUserId == adminUser.Id))
+        {
+            context.Employees.Add(new VIGOR.Shared.Models.Employee { IdentityUserId = adminUser.Id, Name = "VIGOR Admin", DepartmentId = department1.DepartmentId });
+        }
+        if (leadUser != null && !await context.Employees.AnyAsync(e => e.IdentityUserId == leadUser.Id))
+        {
+            context.Employees.Add(new VIGOR.Shared.Models.Employee { IdentityUserId = leadUser.Id, Name = "VIGOR Vagtansvarlig", DepartmentId = department1.DepartmentId });
+        }
+        if (staffUser != null && !await context.Employees.AnyAsync(e => e.IdentityUserId == staffUser.Id))
+        {
+            context.Employees.Add(new VIGOR.Shared.Models.Employee { IdentityUserId = staffUser.Id, Name = "VIGOR Personale", DepartmentId = department2.DepartmentId });
+        }
+        await context.SaveChangesAsync();
     }
 }
