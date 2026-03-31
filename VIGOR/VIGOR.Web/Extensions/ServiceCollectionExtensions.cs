@@ -49,6 +49,28 @@ namespace VIGOR.Web.Extensions
                         ValidAudience = jwtSettings["Audience"],
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Secret"]!))
                     };
+                    
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnChallenge = context =>
+                        {
+                            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                            logger.LogWarning("JWT Challenge triggered! Error: {Error}, Description: {Description}", context.Error, context.ErrorDescription);
+                            return Task.CompletedTask;
+                        },
+                        OnAuthenticationFailed = context =>
+                        {
+                            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                            logger.LogError("JWT Authentication failed: {Exception}", context.Exception.Message);
+                            return Task.CompletedTask;
+                        },
+                        OnTokenValidated = context =>
+                        {
+                            var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                            logger.LogInformation("JWT Token validated successfully for user: {User}", context.Principal?.Identity?.Name);
+                            return Task.CompletedTask;
+                        }
+                    };
                 });
 
             services.AddAuthorization();
