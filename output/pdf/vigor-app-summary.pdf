@@ -1,0 +1,78 @@
+%PDF-1.4
+%u00E2u00E3u00CFu00D3
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R /F2 5 0 R >> >> /Contents 6 0 R >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+6 0 obj
+<< /Length 3570 >>
+stream
+q 1 1 1 rg 0 0 612 792 re f Q
+q 0.08 0.18 0.29 rg 0 762 612 30 re f Q
+BT /F2 18 Tf 40 775 Td (VIGOR - App Summary) Tj ET
+BT /F1 8 Tf 462 775 Td (Repo-based one-pager) Tj ET
+40 742 m 572 742 l S
+BT /F2 11 Tf 40 722 Td (What it is) Tj ET
+BT /F1 9 Tf 40 705 Td (VIGOR is a digital shift handover system for residential care environments.) Tj ET
+BT /F1 9 Tf 40 692 Td (It replaces paper/Excel overlap sheets with structured, secure shift information sharing.) Tj ET
+BT /F2 11 Tf 40 666 Td (Who it is for) Tj ET
+BT /F1 9 Tf 40 649 Td (Primary users: care staff and shift leaders in 24/7 residential care.) Tj ET
+BT /F1 9 Tf 40 636 Td (Repo roles: Leder, Vagtansvarlig, and Personale.) Tj ET
+BT /F2 11 Tf 40 610 Td (What it does) Tj ET
+BT /F1 8 Tf 50 593 Td (- Login via ASP.NET Core Identity and JWT authentication.) Tj ET
+BT /F1 8 Tf 50 579 Td (- Role-based start pages: admin, schedule, and home.) Tj ET
+BT /F1 8 Tf 50 565 Td (- API endpoints for auth login and department-scoped citizen lookup.) Tj ET
+BT /F1 8 Tf 50 551 Td (- EF Core SQLite persistence for Identity, employees, citizens, and departments.) Tj ET
+BT /F1 8 Tf 50 537 Td (- Startup seeding for roles, test users, departments, citizens, and employees.) Tj ET
+BT /F1 8 Tf 50 523 Td (- Development Swagger/OpenAPI plus a /health endpoint.) Tj ET
+BT /F1 8 Tf 50 509 Td (- Not found in repo: implemented medication, tasks/notes, shift snapshots, full history.) Tj ET
+BT /F2 11 Tf 322 722 Td (How it works) Tj ET
+BT /F1 8 Tf 322 705 Td (Client: VIGOR.MAUI is a Windows .NET MAUI Blazor Hybrid app.) Tj ET
+BT /F1 8 Tf 322 692 Td (API: VIGOR.Web is an ASP.NET Core Web API with controllers and DI.) Tj ET
+BT /F1 8 Tf 322 679 Td (Shared: VIGOR.Shared contains models, DTOs, interfaces, and client services.) Tj ET
+BT /F1 8 Tf 322 666 Td (Data: AppDbContext extends IdentityDbContext and adds domain DbSets.) Tj ET
+BT /F1 8 Tf 322 653 Td (Flow: client posts credentials to api/auth/login; API validates with Identity.) Tj ET
+BT /F1 8 Tf 322 640 Td (Flow: API returns a JWT; MAUI stores it in SecureStorage for later requests.) Tj ET
+BT /F1 8 Tf 322 627 Td (Flow: citizen lookup uses the JWT user id to find the employee department;) Tj ET
+BT /F1 8 Tf 322 614 Td (      the API ignores the requested department id for safer server-side scoping.) Tj ET
+BT /F1 8 Tf 322 601 Td (Client base URL in MAUI: http://localhost:5249 \(Android uses 10.0.2.2\).) Tj ET
+BT /F2 11 Tf 322 568 Td (How to run) Tj ET
+BT /F1 8 Tf 322 551 Td (1. Install/use .NET SDK 10.0; MAUI Windows workload is needed for the client.) Tj ET
+BT /F1 8 Tf 322 538 Td (2. From repo root: dotnet restore VIGOR.slnx) Tj ET
+BT /F1 8 Tf 322 525 Td (3. Start API: dotnet run --project VIGOR/VIGOR.Web/VIGOR.Web.csproj --launch-profile http) Tj ET
+BT /F1 8 Tf 322 512 Td (4. In another terminal, start MAUI:) Tj ET
+BT /F1 8 Tf 322 499 Td (   dotnet run --project VIGOR/VIGOR.MAUI/VIGOR.MAUI.csproj -f net10.0-windows10.0.19041.0) Tj ET
+BT /F1 8 Tf 322 486 Td (5. API listens on http://localhost:5249; Swagger appears in Development.) Tj ET
+BT /F1 8 Tf 322 473 Td (6. Seeded logins in repo include admin@vigor.dk / Admin1234 and) Tj ET
+BT /F1 8 Tf 322 460 Td (   vagtansvarlig@vigor.dk or personale@vigor.dk / Test1234.) Tj ET
+40 90 m 572 90 l S
+BT /F1 7 Tf 40 76 Td (Evidence used: README.md, VIGOR.slnx, VIGOR.Web Program.cs/config/controllers/data, VIGOR.MAUI project/services/pages, VIGOR.Shared services/models.) Tj ET
+BT /F1 7 Tf 40 64 Td (Generated locally; visual PNG rendering not available because pdftoppm is not installed in this environment.) Tj ET
+
+endstream
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000031 00000 n 
+0000000080 00000 n 
+0000000137 00000 n 
+0000000273 00000 n 
+0000000343 00000 n 
+0000000418 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+4040
+%%EOF

@@ -170,4 +170,25 @@ static async Task SeedDataAsync(IServiceProvider serviceProvider)
         }
         await context.SaveChangesAsync();
     }
+
+    // Keep seeded employees in sync even when departments already existed.
+    var department1ForEmployees = await context.Departments.FirstOrDefaultAsync(d => d.Name == "Afdeling A");
+    var department2ForEmployees = await context.Departments.FirstOrDefaultAsync(d => d.Name == "Afdeling B");
+    var adminUserForEmployee = await userManager.FindByEmailAsync(testEmail);
+    var leadUserForEmployee = await userManager.FindByEmailAsync(leadEmail);
+    var staffUserForEmployee = await userManager.FindByEmailAsync(staffEmail);
+
+    if (department1ForEmployees != null && adminUserForEmployee != null && !await context.Employees.AnyAsync(e => e.IdentityUserId == adminUserForEmployee.Id))
+    {
+        context.Employees.Add(new VIGOR.Shared.Models.Employee { IdentityUserId = adminUserForEmployee.Id, Name = "VIGOR Admin", DepartmentId = department1ForEmployees.DepartmentId });
+    }
+    if (department1ForEmployees != null && leadUserForEmployee != null && !await context.Employees.AnyAsync(e => e.IdentityUserId == leadUserForEmployee.Id))
+    {
+        context.Employees.Add(new VIGOR.Shared.Models.Employee { IdentityUserId = leadUserForEmployee.Id, Name = "VIGOR Vagtansvarlig", DepartmentId = department1ForEmployees.DepartmentId });
+    }
+    if (department2ForEmployees != null && staffUserForEmployee != null && !await context.Employees.AnyAsync(e => e.IdentityUserId == staffUserForEmployee.Id))
+    {
+        context.Employees.Add(new VIGOR.Shared.Models.Employee { IdentityUserId = staffUserForEmployee.Id, Name = "VIGOR Personale", DepartmentId = department2ForEmployees.DepartmentId });
+    }
+    await context.SaveChangesAsync();
 }

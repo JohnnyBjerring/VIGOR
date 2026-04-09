@@ -25,13 +25,12 @@ namespace VIGOR.Web.Controllers.Api
             _logger = logger;
         }
 
-        // GET api/citizens/by-department/{departmentId}
-        [HttpGet("by-department/{departmentId}")]
-        public async Task<IActionResult> GetCitizensByDepartment(int departmentId, CancellationToken cancellationToken)
+        [HttpGet]
+        public async Task<IActionResult> GetCitizens(CancellationToken cancellationToken)
         {
             try
             {
-                _logger.LogWarning("CitizensApiController.GetCitizensByDepartment REACHED! Claims = {Claims}", string.Join(", ", User.Claims.Select(c => c.Type)));
+                _logger.LogWarning("CitizensApiController.GetCitizens REACHED! Claims = {Claims}", string.Join(", ", User.Claims.Select(c => c.Type)));
                 var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (userId == null) 
                 {
@@ -49,8 +48,7 @@ namespace VIGOR.Web.Controllers.Api
                     return Forbid();
                 }
 
-                // Filtrering sker server-side: vi ignorerer det indsendte departmentId 
-                // for at fastholde sikkerheden omkring medarbejderens egen afdeling.
+                // Department og sikkerhed fastsættes udelukkende ud fra den autentificerede medarbejders Employee/Department relation.
                 var safeDepartmentId = employee.DepartmentId.Value;
 
                 var citizens = await _citizenService.GetCitizensByDepartmentAsync(safeDepartmentId, cancellationToken);
@@ -58,10 +56,9 @@ namespace VIGOR.Web.Controllers.Api
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while getting citizens by department");
+                _logger.LogError(ex, "An error occurred while getting citizens");
                 return StatusCode(500);
             }
         }
     }
 }
-

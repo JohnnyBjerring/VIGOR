@@ -17,7 +17,7 @@ namespace VIGOR.Shared.Services
 
         public async Task<IEnumerable<Citizen>> GetCitizensByDepartmentAsync(int departmentId, CancellationToken cancellationToken = default)
         {
-            var url = $"api/citizens/by-department/{departmentId}";
+            var url = "api/citizens";
             var result = await _http.GetFromJsonAsync<IEnumerable<Citizen>>(url, cancellationToken);
             return result ?? Enumerable.Empty<Citizen>();
         }

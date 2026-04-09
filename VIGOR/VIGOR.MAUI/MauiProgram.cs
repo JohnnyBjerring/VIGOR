@@ -49,7 +49,7 @@ public static class MauiProgram
 			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.ICitizenService, VIGOR.Shared.Services.CitizenClientService>();
 			
 			// Note: For Android Emulator change localhost to 10.0.2.2
-			var baseAddress = DeviceInfo.Platform == DevicePlatform.Android ? "http://10.0.2.2:5249/" : "http://localhost:5249/";
+			var baseAddress = ResolveApiBaseAddress();
 			builder.Services.AddScoped(sp => 
 			{
 			    var handler = new VIGOR.MAUI.Services.MauiAuthHttpHandler { InnerHandler = new HttpClientHandler() };
@@ -92,6 +92,20 @@ public static class MauiProgram
 			}
 			throw;
 		}
+	}
+
+	private static string ResolveApiBaseAddress()
+	{
+		var overrideUrl = Environment.GetEnvironmentVariable("VIGOR_API_BASE");
+		if (!string.IsNullOrWhiteSpace(overrideUrl))
+		{
+			return overrideUrl;
+		}
+
+		// Default to HTTPS for non-Android clients so tokens survive redirect.
+		return DeviceInfo.Platform == DevicePlatform.Android
+			? "http://10.0.2.2:5249/"
+			: "https://localhost:7047/";
 	}
 }
 
