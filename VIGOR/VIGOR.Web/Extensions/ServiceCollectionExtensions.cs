@@ -83,7 +83,11 @@ namespace VIGOR.Web.Extensions
             services.AddScoped<ICitizenService, CitizenService>();
 
             // API Controllers
-            services.AddControllers();
+            services.AddControllers()
+                .AddJsonOptions(options =>
+                {
+                    options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+                });
 
             return services;
         }

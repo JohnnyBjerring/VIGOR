@@ -143,11 +143,11 @@ static async Task SeedDataAsync(IServiceProvider serviceProvider)
         await context.SaveChangesAsync();
 
         context.Citizens.AddRange(
-            new VIGOR.Shared.Models.Citizen { Name = "Jens Hansen", Status = "Aktiv", DepartmentId = department1.DepartmentId },
-            new VIGOR.Shared.Models.Citizen { Name = "Anna Nielsen", Status = "Aktiv", DepartmentId = department1.DepartmentId },
-            new VIGOR.Shared.Models.Citizen { Name = "Ole Jensen", Status = "Inaktiv", DepartmentId = department1.DepartmentId },
-            new VIGOR.Shared.Models.Citizen { Name = "Peter Møller", Status = "Aktiv", DepartmentId = department2.DepartmentId },
-            new VIGOR.Shared.Models.Citizen { Name = "Mette Poulsen", Status = "Inaktiv", DepartmentId = department2.DepartmentId }
+            new VIGOR.Shared.Models.Citizen { Name = "Jens Hansen", Status = VIGOR.Shared.Enums.CitizenStatus.Green, DepartmentId = department1.DepartmentId },
+            new VIGOR.Shared.Models.Citizen { Name = "Anna Nielsen", Status = VIGOR.Shared.Enums.CitizenStatus.Green, DepartmentId = department1.DepartmentId },
+            new VIGOR.Shared.Models.Citizen { Name = "Ole Jensen", Status = VIGOR.Shared.Enums.CitizenStatus.Red, DepartmentId = department1.DepartmentId },
+            new VIGOR.Shared.Models.Citizen { Name = "Peter Møller", Status = VIGOR.Shared.Enums.CitizenStatus.Green, DepartmentId = department2.DepartmentId },
+            new VIGOR.Shared.Models.Citizen { Name = "Mette Poulsen", Status = VIGOR.Shared.Enums.CitizenStatus.Yellow, DepartmentId = department2.DepartmentId }
         );
         await context.SaveChangesAsync();
 

@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Threading;
+using VIGOR.Shared.DTOs;
+using VIGOR.Shared.Enums;
 using VIGOR.Shared.Interfaces.Services;
 using VIGOR.Web.Data;
 
@@ -57,6 +59,52 @@ namespace VIGOR.Web.Controllers.Api
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while getting citizens");
+                return StatusCode(500);
+            }
+        }
+
+        [HttpPost("{citizenId:int}/status")]
+        public async Task<IActionResult> UpdateStatus(int citizenId, [FromBody] UpdateCitizenStatusRequest request, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (request == null || !ModelState.IsValid)
+                {
+                    return BadRequest();
+                }
+
+                if (!Enum.IsDefined(typeof(CitizenStatus), request.Status))
+                {
+                    return BadRequest("Invalid status value.");
+                }
+
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (userId == null)
+                {
+                    return Unauthorized();
+                }
+
+                var employee = await _context.Employees
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(e => e.IdentityUserId == userId, cancellationToken);
+
+                if (employee == null || employee.DepartmentId == null)
+                {
+                    return Forbid();
+                }
+
+                var updatedCitizen = await _citizenService.UpdateCitizenStatusAsync(citizenId, employee.DepartmentId.Value, request.Status, cancellationToken);
+
+                if (updatedCitizen == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(updatedCitizen);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while updating citizen status");
                 return StatusCode(500);
             }
         }

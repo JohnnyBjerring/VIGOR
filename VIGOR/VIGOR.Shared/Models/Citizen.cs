@@ -18,9 +18,9 @@ namespace VIGOR.Shared.Models
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Borgerens status (f.eks. Aktiv, Inaktiv).
+        /// Borgerens risikoprofil (Trafiklys: Red, Yellow, Green).
         /// </summary>
-        public string Status { get; set; } = "Aktiv";
+        public VIGOR.Shared.Enums.CitizenStatus Status { get; set; } = VIGOR.Shared.Enums.CitizenStatus.Green;
 
         /// <summary>
         /// FK til den afdeling (Department) borgeren tilhører.

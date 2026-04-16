@@ -1,6 +1,6 @@
-<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.6 Chrome/144.0.7559.236 Electron/40.8.4 Safari/537.36" version="29.6.6">
-  <diagram name="Side-1" id="REDOVn3v_DSHft5926fH">
-    <mxGraphModel dx="1188" dy="801" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.6 Chrome/144.0.7559.236 Electron/40.8.4 Safari/537.36" version="29.6.6" pages="2">
+  <diagram name="Iteration 2" id="REDOVn3v_DSHft5926fH">
+    <mxGraphModel dx="1426" dy="961" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
@@ -134,6 +134,151 @@
         </mxCell>
         <mxCell id="divider2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;" value="Alternative Flow - Ingen borgere på afdeling" vertex="1">
           <mxGeometry height="30" width="290" x="70" y="310" as="geometry" />
+        </mxCell>
+        <mxCell id="divider3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;" value="Alternative Flow - Manglende adgang" vertex="1">
+          <mxGeometry height="30" width="250" x="90" y="450" as="geometry" />
+        </mxCell>
+        <mxCell id="divider4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;" value="Alternative Flow - Systemfejl" vertex="1">
+          <mxGeometry height="30" width="210" x="110" y="590" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="bsh9SHhiLrfX3s83zM6u" name="Iteration 3">
+    <mxGraphModel dx="1426" dy="961" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontStyle=1;fontSize=18;" value="SSD - UC03 Opdatér borgerstatus / risikoprofil" vertex="1">
+          <mxGeometry height="30" width="420" x="30" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="actorTop" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="Personale" vertex="1">
+          <mxGeometry height="80" width="40" x="40" y="70" as="geometry" />
+        </mxCell>
+        <mxCell id="systemTop" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="VIGOR System" vertex="1">
+          <mxGeometry height="50" width="140" x="291" y="85" as="geometry" />
+        </mxCell>
+        <mxCell id="lifelineActor" parent="1" style="shape=line;strokeWidth=1;dashed=1;html=1;" value="" vertex="1">
+          <mxGeometry height="500" width="1" x="59" y="150" as="geometry" />
+        </mxCell>
+        <mxCell id="lifelineSystem" parent="1" style="shape=line;strokeWidth=1;dashed=1;html=1;" value="" vertex="1">
+          <mxGeometry height="505" width="1" x="320" y="145" as="geometry" />
+        </mxCell>
+        <mxCell id="line1" parent="1" style="shape=line;strokeWidth=1;html=1;" value="" vertex="1">
+          <mxGeometry height="1" width="430" x="20" y="185" as="geometry" />
+        </mxCell>
+        <mxCell id="msg1" edge="1" parent="1" source="lifelineActor" style="endArrow=classic;html=1;rounded=0;" value="updateCitizenStatus(citizenId, status)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="60" y="230" />
+              <mxPoint x="320" y="230" />
+              <mxPoint x="340" y="230" />
+              <mxPoint x="380" y="230" />
+            </Array>
+            <mxPoint x="380" y="230" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg2" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" target="lifelineActor" value="confirmUpdate()">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="380" y="270" />
+              <mxPoint x="340" y="270" />
+              <mxPoint x="320" y="270" />
+              <mxPoint x="60" y="270" />
+            </Array>
+            <mxPoint x="340" y="270" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="line2" parent="1" style="shape=line;strokeWidth=1;html=1;" value="" vertex="1">
+          <mxGeometry height="1" width="320" x="60" y="325" as="geometry" />
+        </mxCell>
+        <mxCell id="msg3" edge="1" parent="1" source="lifelineActor" style="endArrow=classic;html=1;rounded=0;" value="updateCitizenStatus(citizenId, status)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="60" y="370" />
+              <mxPoint x="320" y="370" />
+              <mxPoint x="380" y="370" />
+            </Array>
+            <mxPoint x="380" y="370" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg4" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" target="lifelineActor" value="Vis fejl: ugyldig status">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="380" y="410" />
+              <mxPoint x="320" y="410" />
+              <mxPoint x="60" y="410" />
+            </Array>
+            <mxPoint x="380" y="410" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="line3" parent="1" style="shape=line;strokeWidth=1;html=1;" value="" vertex="1">
+          <mxGeometry height="1" width="320" x="60" y="465" as="geometry" />
+        </mxCell>
+        <mxCell id="msg5" edge="1" parent="1" source="lifelineActor" style="endArrow=classic;html=1;rounded=0;" value="updateCitizenStatus(citizenId, status)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="60" y="510" />
+              <mxPoint x="380" y="510" />
+            </Array>
+            <mxPoint x="380" y="510" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg6" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" target="lifelineActor" value="Vis fejl: adgang nægtet">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="380" y="550" />
+              <mxPoint x="320" y="550" />
+              <mxPoint x="60" y="550" />
+            </Array>
+            <mxPoint x="380" y="550" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="line4" parent="1" style="shape=line;strokeWidth=1;html=1;" value="" vertex="1">
+          <mxGeometry height="1" width="320" x="60" y="605" as="geometry" />
+        </mxCell>
+        <mxCell id="msg7" edge="1" parent="1" source="lifelineActor" style="endArrow=classic;html=1;rounded=0;" value="updateCitizenStatus(citizenId, status)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="60" y="650" />
+              <mxPoint x="380" y="650" />
+            </Array>
+            <mxPoint x="380" y="650" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="msg8" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;" target="lifelineActor" value="Vis fejlmeddelelse">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="380" y="690" />
+              <mxPoint x="320" y="690" />
+              <mxPoint x="60" y="690" />
+            </Array>
+            <mxPoint x="380" y="650" as="sourcePoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="actorBottom" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" value="Personale" vertex="1">
+          <mxGeometry height="80" width="40" x="40" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="systemBottom" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="VIGOR System" vertex="1">
+          <mxGeometry height="50" width="140" x="291" y="735" as="geometry" />
+        </mxCell>
+        <mxCell id="divider1" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;" value="Main Success Scenario" vertex="1">
+          <mxGeometry height="30" width="190" x="110" y="170" as="geometry" />
+        </mxCell>
+        <mxCell id="E7Md43C9qZE7vSJe2rBX-1" edge="1" parent="1" source="actorBottom" style="endArrow=none;dashed=1;html=1;rounded=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;exitPerimeter=0;" target="actorTop" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="30" y="240" as="sourcePoint" />
+            <mxPoint x="80" y="190" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="E7Md43C9qZE7vSJe2rBX-2" edge="1" parent="1" source="systemBottom" style="endArrow=none;dashed=1;html=1;rounded=0;exitX=0.634;exitY=0.04;exitDx=0;exitDy=0;exitPerimeter=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="380" y="705" as="sourcePoint" />
+            <mxPoint x="380" y="135" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="divider2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;" value="Alternative Flow - Ugyldig input" vertex="1">
+          <mxGeometry height="30" width="250" x="90" y="310" as="geometry" />
         </mxCell>
         <mxCell id="divider3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fontStyle=1;fillColor=#ffffff;strokeColor=#000000;" value="Alternative Flow - Manglende adgang" vertex="1">
           <mxGeometry height="30" width="250" x="90" y="450" as="geometry" />

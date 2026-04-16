@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using VIGOR.Shared.Interfaces.Services;
 using VIGOR.Shared.Models;
+using VIGOR.Shared.Enums;
 using VIGOR.Web.Data;
 
 namespace VIGOR.Web.Services
@@ -29,6 +30,22 @@ namespace VIGOR.Web.Services
                 .AsNoTracking()
                 .Where(c => c.DepartmentId == departmentId)
                 .ToListAsync(cancellationToken);
+        }
+
+        public async Task<Citizen?> UpdateCitizenStatusAsync(int citizenId, int departmentId, CitizenStatus status, CancellationToken cancellationToken = default)
+        {
+            var citizen = await _context.Citizens
+                .FirstOrDefaultAsync(c => c.CitizenId == citizenId && c.DepartmentId == departmentId, cancellationToken);
+            
+            if (citizen == null)
+            {
+                return null;
+            }
+
+            citizen.Status = status;
+            await _context.SaveChangesAsync(cancellationToken);
+
+            return citizen;
         }
     }
 }
