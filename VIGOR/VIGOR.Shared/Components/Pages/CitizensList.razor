@@ -26,23 +26,29 @@
 </div>
 
 <div class="border border-dark rounded p-0" style="min-height: 400px; background-color: #fff;">
-    @if (_loading)
+@if (_loading)
+{
+    <div class="p-4"><p>Indlæser borgere...</p></div>
+}
+else if (_error && !_citizens.Any())
+{
+    <div class="p-4 text-center mt-5 text-danger">Der opstod en fejl ved indlæsning: @_errorMessage</div>
+}
+else if (!_filteredCitizens.Any())
+{
+    <div class="p-4 text-center mt-5 pt-5 pb-5">
+        <p>Hvis der ikke findes borgere på afdelingen, vises beskeden her.</p>
+    </div>
+}
+else
+{
+    @if (_error)
     {
-        <div class="p-4"><p>Indlæser borgere...</p></div>
-    }
-    else if (_error)
-    {
-        <div class="p-4 text-center mt-5 text-danger">Der opstod en fejl ved indlæsning: @_errorMessage</div>
-    }
-    else if (!_filteredCitizens.Any())
-    {
-        <div class="p-4 text-center mt-5 pt-5 pb-5">
-            <p>Hvis der ikke findes borgere på afdelingen, vises beskeden her.</p>
+        <div class="alert alert-danger m-3" role="alert">
+            Fejl: @_errorMessage
         </div>
     }
-    else
-    {
-        <table class="table table-borderless m-0">
+    <table class="table table-borderless m-0">
             <thead class="border-bottom border-dark">
                 <tr>
                     <th class="p-3 border-end border-dark">Navn</th>
@@ -57,7 +63,16 @@
                     <tr class="border-bottom">
                         <td class="p-3">@c.Name</td>
                         <td class="p-3">@c.CitizenId</td>
-                        <td class="p-3">@c.Status</td>
+                        <td class="p-3">
+                            <select class="form-select form-select-sm border-dark w-100" 
+                                    value="@c.Status" 
+                                    @onchange="@(async (e) => await UpdateStatusAsync(c, e.Value?.ToString()))">
+                                @foreach (var status in Enum.GetValues<VIGOR.Shared.Enums.CitizenStatus>())
+                                {
+                                    <option value="@status">@status</option>
+                                }
+                            </select>
+                        </td>
                         <td class="p-3">
                             <button class="btn btn-outline-dark btn-sm px-4">Åbn</button>
                         </td>
@@ -123,4 +138,44 @@
             StateHasChanged();
         }
     }
+
+    private async Task UpdateStatusAsync(Citizen citizen, string? newValue)
+    {
+        if (string.IsNullOrEmpty(newValue) || !Enum.TryParse<VIGOR.Shared.Enums.CitizenStatus>(newValue, out var newStatus) || citizen.Status == newStatus)
+        {
+            return;
+        }
+
+        try
+        {
+            var currentDept = DepartmentId ?? 1;
+            // Optimistic update
+            var oldStatus = citizen.Status;
+            citizen.Status = newStatus;
+
+            var result = await CitizenService.UpdateCitizenStatusAsync(citizen.CitizenId, currentDept, newStatus);
+            if (result == null)
+            {
+                // Revert on failure
+                citizen.Status = oldStatus;
+                _error = true;
+                _errorMessage = $"Kunne ikke opdatere status for {citizen.Name}.";
+            }
+            else
+            {
+                // Clear error if success
+                _error = false;
+                _errorMessage = string.Empty;
+                citizen.Status = result.Status;
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = true;
+            _errorMessage = $"Fejl under opdatering af status for {citizen.Name}: {ex.Message}";
+            await LoadData(); // reload on exception to reflect true state
+        }
+        StateHasChanged();
+    }
 }
+
