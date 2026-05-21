@@ -1,0 +1,218 @@
+<mxfile host="Electron">
+  <diagram name="UC04" id="CGRTQ_MUdy6sVrvN2pH0">
+    <mxGraphModel dx="2175" dy="1478" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#111827;fontColor=#ffffff;fontSize=24;fontStyle=1;spacing=12;" value="Design Class Diagram - VIGOR" vertex="1">
+          <mxGeometry height="60" width="880" x="560" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=13;fontColor=#374151;align=center;verticalAlign=middle;whiteSpace=wrap;" value="Samlet DCD for UC02, UC03 og UC04: UI - client services - API - server services - database/domæne" vertex="1">
+          <mxGeometry height="32" width="1060" x="470" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="frameClient" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d1d5db;dashed=1;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="910" width="360" x="40" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="frameShared" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d1d5db;dashed=1;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="970" width="390" x="430" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="frameApi" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d1d5db;dashed=1;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="970" width="310" x="850" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="frameServices" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d1d5db;dashed=1;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="970" width="370" x="1190" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="frameData" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d1d5db;dashed=1;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="970" width="520" x="1590" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="labelClient" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1;fontColor=#111827;align=left;verticalAlign=middle;whiteSpace=wrap;" value="Client / UI-lag" vertex="1">
+          <mxGeometry height="30" width="250" x="65" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="labelShared" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1;fontColor=#111827;align=left;verticalAlign=middle;whiteSpace=wrap;" value="Shared / kontrakter" vertex="1">
+          <mxGeometry height="30" width="270" x="455" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="labelApi" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1;fontColor=#111827;align=left;verticalAlign=middle;whiteSpace=wrap;" value="Web / API-lag" vertex="1">
+          <mxGeometry height="30" width="250" x="875" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="labelServices" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1;fontColor=#111827;align=left;verticalAlign=middle;whiteSpace=wrap;" value="Server services" vertex="1">
+          <mxGeometry height="30" width="250" x="1215" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="labelData" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1;fontColor=#111827;align=left;verticalAlign=middle;whiteSpace=wrap;" value="Data / domæne" vertex="1">
+          <mxGeometry height="30" width="250" x="1615" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="uiCitizensList" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#92400e;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;CitizensList.razor&lt;/b&gt;&lt;br&gt;&lt;hr&gt;Blazor UI&lt;br&gt;&lt;br&gt;+ viser borgere&lt;br&gt;+ viser status&lt;br&gt;+ viser fast medicin&lt;br&gt;+ registrerer givet/annulleret&lt;br&gt;+ kalder client interfaces" vertex="1">
+          <mxGeometry height="180" width="290" x="70" y="235" as="geometry" />
+        </mxCell>
+        <mxCell id="uiMainLayout" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#92400e;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;MainLayout / navigation&lt;/b&gt;&lt;br&gt;&lt;hr&gt;Blazor layout&lt;br&gt;&lt;br&gt;+ menu&lt;br&gt;+ brugerinfo&lt;br&gt;+ navigation til borgeroversigt" vertex="1">
+          <mxGeometry height="125" width="290" x="70" y="455" as="geometry" />
+        </mxCell>
+        <mxCell id="sharedCitizenApi" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#b45309;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;ICitizenApi&lt;/b&gt;&lt;br&gt;&lt;hr&gt;interface&lt;br&gt;&lt;br&gt;+ GetCitizensAsync()&lt;br&gt;+ UpdateStatusAsync(...)" vertex="1">
+          <mxGeometry height="125" width="320" x="465" y="235" as="geometry" />
+        </mxCell>
+        <mxCell id="sharedCitizenClientService" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#b45309;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;CitizenClientService&lt;/b&gt;&lt;br&gt;&lt;hr&gt;client service&lt;br&gt;&lt;br&gt;- HttpClient&lt;br&gt;+ kalder Citizens API&lt;br&gt;+ mapper HTTP-svar til DTO&#39;er" vertex="1">
+          <mxGeometry height="145" width="320" x="465" y="385" as="geometry" />
+        </mxCell>
+        <mxCell id="sharedMedicationApi" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#b45309;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;IFixedMedicationApi&lt;/b&gt;&lt;br&gt;&lt;hr&gt;interface&lt;br&gt;&lt;br&gt;+ GetFixedMedicationsAsync(...)&lt;br&gt;+ RegisterGivenAsync(...)&lt;br&gt;+ CancelGivenAsync(...)&lt;br&gt;+ UpdatePlanAsync(...)" vertex="1">
+          <mxGeometry height="155" width="320" x="465" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="sharedMedicationClientService" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#b45309;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;FixedMedicationClientService&lt;/b&gt;&lt;br&gt;&lt;hr&gt;client service&lt;br&gt;&lt;br&gt;- HttpClient&lt;br&gt;+ GET fast medicin&lt;br&gt;+ POST registrer givet&lt;br&gt;+ POST annuller&lt;br&gt;+ PUT opdater plan" vertex="1">
+          <mxGeometry height="175" width="320" x="465" y="755" as="geometry" />
+        </mxCell>
+        <mxCell id="dtoBox" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f9fafb;strokeColor=#9ca3af;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;DTO&#39;er / requests&lt;/b&gt;&lt;br&gt;&lt;hr&gt;CitizenDto&lt;br&gt;FixedMedicationDto&lt;br&gt;UpdateCitizenStatusRequest&lt;br&gt;RegisterFixedMedicationGivenRequest&lt;br&gt;UpdateFixedMedicationPlanRequest" vertex="1">
+          <mxGeometry height="125" width="320" x="465" y="955" as="geometry" />
+        </mxCell>
+        <mxCell id="apiCitizensController" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1e40af;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;CitizensApiController&lt;/b&gt;&lt;br&gt;&lt;hr&gt;REST controller&lt;br&gt;&lt;br&gt;+ GET /api/citizens&lt;br&gt;+ POST /status&lt;br&gt;+ GET /fixed-medications&lt;br&gt;+ POST /give&lt;br&gt;+ POST /cancel&lt;br&gt;+ PUT /fixed-medications/{id}" vertex="1">
+          <mxGeometry height="250" width="250" x="880" y="315" as="geometry" />
+        </mxCell>
+        <mxCell id="apiAuthController" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1e40af;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;AuthController&lt;/b&gt;&lt;br&gt;&lt;hr&gt;REST controller&lt;br&gt;&lt;br&gt;+ login&lt;br&gt;+ udsteder JWT&lt;br&gt;+ bruger Identity" vertex="1">
+          <mxGeometry height="135" width="250" x="890" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="serviceCitizenInterface" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#1e40af;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;ICitizenService&lt;/b&gt;&lt;br&gt;&lt;hr&gt;interface&lt;br&gt;&lt;br&gt;+ GetCitizensForDepartmentAsync(...)&lt;br&gt;+ UpdateCitizenStatusAsync(...)" vertex="1">
+          <mxGeometry height="130" width="300" x="1225" y="235" as="geometry" />
+        </mxCell>
+        <mxCell id="serviceCitizen" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#166534;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;CitizenService&lt;/b&gt;&lt;br&gt;&lt;hr&gt;server service&lt;br&gt;&lt;br&gt;- AppDbContext&lt;br&gt;+ henter borgere pr. afdeling&lt;br&gt;+ opdaterer status&lt;br&gt;+ validerer afdeling/adgang" vertex="1">
+          <mxGeometry height="160" width="300" x="1225" y="395" as="geometry" />
+        </mxCell>
+        <mxCell id="serviceMedicationInterface" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#1e40af;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;IFixedMedicationService&lt;/b&gt;&lt;br&gt;&lt;hr&gt;interface&lt;br&gt;&lt;br&gt;+ GetFixedMedicationsAsync(...)&lt;br&gt;+ RegisterGivenAsync(...)&lt;br&gt;+ CancelGivenAsync(...)&lt;br&gt;+ UpdatePlanAsync(...)" vertex="1">
+          <mxGeometry height="155" width="300" x="1225" y="610" as="geometry" />
+        </mxCell>
+        <mxCell id="serviceMedication" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#166534;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;FixedMedicationService&lt;/b&gt;&lt;br&gt;&lt;hr&gt;server service&lt;br&gt;&lt;br&gt;- AppDbContext&lt;br&gt;+ validerer afdeling&lt;br&gt;+ validerer aktiv plan&lt;br&gt;+ validerer tidspunkt&lt;br&gt;+ gemmer IsGiven/GivenAt/GivenByUserId" vertex="1">
+          <mxGeometry height="190" width="300" x="1225" y="795" as="geometry" />
+        </mxCell>
+        <mxCell id="dbContext" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#6b21a8;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;AppDbContext&lt;/b&gt;&lt;br&gt;&lt;hr&gt;EF Core DbContext&lt;br&gt;&lt;br&gt;+ Citizens&lt;br&gt;+ Departments&lt;br&gt;+ Employees&lt;br&gt;+ FixedMedications&lt;br&gt;+ Identity-tabeller" vertex="1">
+          <mxGeometry height="155" width="300" x="1625" y="235" as="geometry" />
+        </mxCell>
+        <mxCell id="domainCitizen" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#1e40af;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;Citizen&lt;/b&gt;&lt;br&gt;&lt;hr&gt;+ CitizenId&lt;br&gt;+ Name&lt;br&gt;+ Status&lt;br&gt;+ DepartmentId&lt;br&gt;+ FixedMedications" vertex="1">
+          <mxGeometry height="135" width="300" x="1625" y="435" as="geometry" />
+        </mxCell>
+        <mxCell id="domainDepartment" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#92400e;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;Department&lt;/b&gt;&lt;br&gt;&lt;hr&gt;+ DepartmentId&lt;br&gt;+ Name&lt;br&gt;+ Citizens&lt;br&gt;+ Employees" vertex="1">
+          <mxGeometry height="120" width="300" x="1625" y="600" as="geometry" />
+        </mxCell>
+        <mxCell id="domainEmployee" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#6b21a8;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;Employee&lt;/b&gt;&lt;br&gt;&lt;hr&gt;+ EmployeeId&lt;br&gt;+ Name&lt;br&gt;+ IdentityUserId&lt;br&gt;+ DepartmentId" vertex="1">
+          <mxGeometry height="120" width="300" x="1625" y="750" as="geometry" />
+        </mxCell>
+        <mxCell id="domainMedication" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#166534;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=10;" value="&lt;b&gt;FixedMedication&lt;/b&gt;&lt;br&gt;&lt;hr&gt;+ FixedMedicationId&lt;br&gt;+ CitizenId&lt;br&gt;+ Name&lt;br&gt;+ PlannedAt&lt;br&gt;+ IsActive&lt;br&gt;+ IsGiven&lt;br&gt;+ GivenAt&lt;br&gt;+ GivenByUserId&lt;br&gt;+ ScheduleDescription" vertex="1">
+          <mxGeometry height="190" width="300" x="1625" y="900" as="geometry" />
+        </mxCell>
+        <mxCell id="note" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#991b1b;fontSize=12;align=left;verticalAlign=top;spacing=10;arcSize=8;" value="&lt;b&gt;Afgrænsning&lt;/b&gt;&lt;br&gt;Diagrammet viser de centrale klasser for UC02, UC03 og UC04. Testklasser, migrations, frameworkklasser og fuld Identity-model er udeladt for læsbarhed." vertex="1">
+          <mxGeometry height="120" width="290" x="70" y="905" as="geometry" />
+        </mxCell>
+        <mxCell id="eUiCitizenApi" edge="1" parent="1" source="uiCitizensList" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;" target="sharedCitizenApi" value="bruger">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eUiMedApi" edge="1" parent="1" source="uiCitizensList" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;" target="sharedMedicationApi" value="bruger">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="430" y="510" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eCitizenApiImpl" edge="1" parent="1" source="sharedCitizenClientService" style="endArrow=block;endFill=0;html=1;rounded=1;dashed=1;strokeColor=#b45309;strokeWidth=2;fontSize=12;" target="sharedCitizenApi" value="implementerer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eMedApiImpl" edge="1" parent="1" source="sharedMedicationClientService" style="endArrow=block;endFill=0;html=1;rounded=1;dashed=1;strokeColor=#b45309;strokeWidth=2;fontSize=12;" target="sharedMedicationApi" value="implementerer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eClientToController1" edge="1" parent="1" source="sharedCitizenClientService" style="endArrow=block;html=1;rounded=1;strokeColor=#1e40af;strokeWidth=2;fontSize=12;" target="apiCitizensController" value="HTTP REST">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eClientToController2" edge="1" parent="1" source="sharedMedicationClientService" style="endArrow=block;html=1;rounded=1;strokeColor=#1e40af;strokeWidth=2;fontSize=12;entryX=0.007;entryY=0.734;entryDx=0;entryDy=0;entryPerimeter=0;" target="apiCitizensController" value="HTTP REST">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="800" y="860" />
+              <mxPoint x="820" y="500" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eControllerCitizenInterface" edge="1" parent="1" source="apiCitizensController" style="endArrow=block;html=1;rounded=1;strokeColor=#1e40af;strokeWidth=2;fontSize=12;" target="serviceCitizenInterface" value="afhænger af">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eControllerMedicationInterface" edge="1" parent="1" source="apiCitizensController" style="endArrow=block;html=1;rounded=1;strokeColor=#1e40af;strokeWidth=2;fontSize=12;" target="serviceMedicationInterface" value="afhænger af">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eCitizenServiceImpl" edge="1" parent="1" source="serviceCitizen" style="endArrow=block;endFill=0;html=1;rounded=1;dashed=1;strokeColor=#166534;strokeWidth=2;fontSize=12;" target="serviceCitizenInterface" value="implementerer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eMedicationServiceImpl" edge="1" parent="1" source="serviceMedication" style="endArrow=block;endFill=0;html=1;rounded=1;dashed=1;strokeColor=#166534;strokeWidth=2;fontSize=12;" target="serviceMedicationInterface" value="implementerer">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eCitizenServiceDb" edge="1" parent="1" source="serviceCitizen" style="endArrow=block;html=1;rounded=1;strokeColor=#6b21a8;strokeWidth=2;fontSize=12;" target="dbContext" value="bruger">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1530" y="380" />
+              <mxPoint x="1570" y="330" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eMedicationServiceDb" edge="1" parent="1" source="serviceMedication" style="endArrow=block;html=1;rounded=1;strokeColor=#6b21a8;strokeWidth=2;fontSize=12;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=-0.001;entryY=0.911;entryDx=0;entryDy=0;entryPerimeter=0;" target="dbContext" value="bruger">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1590" y="890" />
+              <mxPoint x="1590" y="380" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eDbCitizen" edge="1" parent="1" source="dbContext" style="endArrow=block;html=1;rounded=1;strokeColor=#6b21a8;strokeWidth=2;fontSize=12;" target="domainCitizen" value="DbSet">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eDbDepartment" edge="1" parent="1" source="dbContext" style="endArrow=block;html=1;rounded=1;strokeColor=#6b21a8;strokeWidth=2;fontSize=12;exitX=0.999;exitY=0.849;exitDx=0;exitDy=0;exitPerimeter=0;" target="domainDepartment" value="DbSet">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1980" y="370" />
+              <mxPoint x="1980" y="670" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eDbEmployee" edge="1" parent="1" source="dbContext" style="endArrow=block;html=1;rounded=1;strokeColor=#6b21a8;strokeWidth=2;fontSize=12;entryX=1.005;entryY=0.588;entryDx=0;entryDy=0;entryPerimeter=0;exitX=1.002;exitY=0.681;exitDx=0;exitDy=0;exitPerimeter=0;" target="domainEmployee" value="DbSet">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="2010" y="341" />
+              <mxPoint x="2010" y="821" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eDbMedication" edge="1" parent="1" source="dbContext" style="endArrow=block;html=1;rounded=1;strokeColor=#6b21a8;strokeWidth=2;fontSize=12;" target="domainMedication" value="DbSet">
+          <mxGeometry relative="1" x="-0.0582" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="2030" y="313" />
+              <mxPoint x="2030" y="640" />
+              <mxPoint x="2040" y="960" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eDepartmentCitizen" edge="1" parent="1" source="domainDepartment" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;" target="domainCitizen" value="1 til mange">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eDepartmentEmployee" edge="1" parent="1" source="domainDepartment" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;" target="domainEmployee" value="1 til mange">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eCitizenMedication" edge="1" parent="1" source="domainCitizen" style="endArrow=ERmany;startArrow=ERone;html=1;rounded=1;strokeColor=#166534;strokeWidth=2;fontSize=12;exitX=0.005;exitY=0.543;exitDx=0;exitDy=0;exitPerimeter=0;" target="domainMedication" value="1 til mange">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1600" y="508" />
+              <mxPoint x="1600" y="970" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eDtosUsed" edge="1" parent="1" source="dtoBox" style="endArrow=block;html=1;rounded=1;dashed=1;strokeColor=#6b7280;strokeWidth=2;fontSize=12;entryX=-0.007;entryY=0.817;entryDx=0;entryDy=0;entryPerimeter=0;" target="apiCitizensController" value="request/response">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="860" y="990" />
+              <mxPoint x="860" y="520" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eAuthIdentity" edge="1" parent="1" source="apiAuthController" style="endArrow=block;html=1;rounded=1;dashed=1;strokeColor=#6b7280;strokeWidth=2;fontSize=12;exitX=0.991;exitY=0.935;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" target="dbContext" value="Identity">
+          <mxGeometry relative="1" x="-0.678" y="-194" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="1530" y="780" />
+              <mxPoint x="1560" y="350" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

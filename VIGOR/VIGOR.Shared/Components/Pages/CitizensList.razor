@@ -1,8 +1,15 @@
-@page "/citizens"
+﻿@page "/citizens"
 @page "/citizens/{DepartmentId:int}"
+@using System.Globalization
 @using VIGOR.Shared.Models
+@using VIGOR.Shared.DTOs
 @inject VIGOR.Shared.Interfaces.Services.ICitizenService CitizenService
+@inject VIGOR.Shared.Interfaces.Services.IFixedMedicationApi FixedMedicationApi
+@inject VIGOR.Shared.Interfaces.Services.IPnMedicationApi PnMedicationApi
+@inject VIGOR.Shared.Interfaces.Services.IAuditEventsApi AuditEventsApi
+@inject VIGOR.Shared.Interfaces.Services.IActiveShiftContextState ActiveShiftContextState
 @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavigationManager
 
 <PageTitle>Borgeroversigt</PageTitle>
 
@@ -12,7 +19,8 @@
     </div>
     <div class="col-md-6 text-end small">
         <span class="me-4 pr-3">Bruger: <strong>@_userName</strong></span>
-        <span>Afdeling: <strong>@_departmentName</strong></span>
+        <span class="me-4 pr-3">Afdeling: <strong>@_departmentName</strong></span>
+        <span>Aktiv vagt: <strong>@(_activeShiftContext?.DisplayName ?? "Ingen valgt")</strong></span>
     </div>
 </div>
 
@@ -20,7 +28,7 @@
 {
     <div class="row mb-4">
         <div class="col-md-6">
-            <label for="search" class="form-label mb-1 fw-bold">S�g borger</label>
+            <label for="search" class="form-label mb-1 fw-bold">Søg borger</label>
             <div class="d-flex gap-2" style="max-width: 400px;">
                 <input type="text" id="search" class="form-control border-dark" @bind="_searchTerm" @bind:event="oninput" />
             </div>
@@ -29,114 +37,508 @@
 }
 
 <div class="border border-dark rounded p-0" style="min-height: 400px; background-color: #fff;">
-@if (_loading)
-{
-    <div class="p-4"><p>Indl�ser borgere...</p></div>
-}
-else if (_error && !_citizens.Any())
-{
-    <div class="p-4 text-center mt-5 text-danger">Der opstod en fejl ved indl�sning: @_errorMessage</div>
-}
-else if (!_filteredCitizens.Any())
-{
-    <div class="p-4 text-center mt-5 pt-5 pb-5">
-        <p>Hvis der ikke findes borgere p� afdelingen, vises beskeden her.</p>
-    </div>
-}
-else
-{
-    @if (_selectedCitizen != null)
+    @if (_loading)
     {
-        <div class="p-4" style="background-color: #f8f9fa;">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="m-0">Borgervisning for @_selectedCitizen.Name</h3>
-                <button class="btn btn-outline-dark" @onclick="CloseCitizen">Tilbage til oversigt</button>
-            </div>
-            
-            @if (_error)
-            {
-                <div class="alert alert-danger" role="alert">
-                    Fejl: @_errorMessage
-                </div>
-            }
-
-            <div class="row align-items-center mb-4 fs-5">
-                <div class="col-md-3 fw-bold">Borger-ID:</div>
-                <div class="col-md-9">@_selectedCitizen.CitizenId</div>
-            </div>
-            
-            <div class="row align-items-center mb-5 fs-5">
-                <div class="col-md-3 fw-bold">Aktuel Status:</div>
-                <div class="col-md-9">
-                    <span class="badge @GetStatusBadgeClass(_selectedCitizen.Status)">
-                        @_selectedCitizen.Status
-                    </span>
-                </div>
-            </div>
-
-            <!-- Adgangsbegr�nsning: G�r det nemt at begr�nse til specifikke roller senere -->
-            <AuthorizeView Roles="Leder,Vagtansvarlig,Personale">
-                <Authorized>
-                    <div class="border border-dark rounded p-4 bg-white" style="max-width: 600px;">
-                        <h4 class="mb-3">Opdater Status</h4>
-                        <div class="d-flex gap-3">
-                            @foreach (var status in Enum.GetValues<VIGOR.Shared.Enums.CitizenStatus>())
-                            {
-                                <button class="btn text-white fs-5 fw-bold px-4 py-2 @(status == _selectedCitizen.Status ? "btn-dark border border-3 border-primary" : GetStatusButtonBackgroundClass(status))" 
-                                        @onclick="@(async () => await UpdateStatusAsync(_selectedCitizen, status.ToString()))"
-                                        disabled="@(_loadingStatus == status.ToString())">
-                                    @if (_loadingStatus == status.ToString())
-                                    {
-                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                    }
-                                    @status
-                                </button>
-                            }
-                        </div>
-                    </div>
-                </Authorized>
-                <NotAuthorized>
-                    <div class="alert alert-info">Du har ikke rettigheder til at �ndre status.</div>
-                </NotAuthorized>
-            </AuthorizeView>
+        <div class="p-4"><p>Indlæser borgere...</p></div>
+    }
+    else if (_error && !_citizens.Any())
+    {
+        <div class="p-4 text-center mt-5 text-danger">Der opstod en fejl ved indlæsning: @_errorMessage</div>
+    }
+    else if (!_filteredCitizens.Any())
+    {
+        <div class="p-4 text-center mt-5 pt-5 pb-5">
+            <p>Hvis der ikke findes borgere på afdelingen, vises beskeden her.</p>
         </div>
     }
     else
     {
-        @if (_error)
+        @if (_selectedCitizen != null)
         {
-            <div class="alert alert-danger m-3" role="alert">
-                Fejl: @_errorMessage
+            <div class="p-4" style="background-color: #f8f9fa;">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="m-0">Borgervisning for @_selectedCitizen.Name</h3>
+                    <button class="btn btn-outline-dark" @onclick="CloseCitizen">Tilbage til oversigt</button>
+                </div>
+
+                @if (_error)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        Fejl: @_errorMessage
+                    </div>
+                }
+
+                <div class="row align-items-center mb-4 fs-5">
+                    <div class="col-md-3 fw-bold">Borger-ID:</div>
+                    <div class="col-md-9">@_selectedCitizen.CitizenId</div>
+                </div>
+
+                <div class="row align-items-center mb-5 fs-5">
+                    <div class="col-md-3 fw-bold">Aktuel Status:</div>
+                    <div class="col-md-9">
+                        <span class="badge @GetStatusBadgeClass(_selectedCitizen.Status)">
+                            @_selectedCitizen.Status
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Adgangsbegrænsning: Gør det nemt at begrænse til specifikke roller senere -->
+                <AuthorizeView Roles="Leder,Vagtansvarlig,Personale">
+                    <Authorized>
+                        <div class="border border-dark rounded p-4 bg-white" style="max-width: 600px;">
+                            <h4 class="mb-3">Opdater Status</h4>
+                            <div class="d-flex gap-3">
+                                @foreach (var status in Enum.GetValues<VIGOR.Shared.Enums.CitizenStatus>())
+                                {
+                                    <button class="btn text-white fs-5 fw-bold px-4 py-2 @(status == _selectedCitizen.Status ? "btn-dark border border-3 border-primary" : GetStatusButtonBackgroundClass(status))"
+                                            @onclick="@(async () => await UpdateStatusAsync(_selectedCitizen, status.ToString()))"
+                                            disabled="@(_loadingStatus == status.ToString())">
+                                        @if (_loadingStatus == status.ToString())
+                                        {
+                                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        }
+                                        @status
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </Authorized>
+                    <NotAuthorized>
+                        <div class="alert alert-info">Du har ikke rettigheder til at ændre status.</div>
+                    </NotAuthorized>
+                </AuthorizeView>
+
+                <div class="border border-dark rounded p-4 bg-white mt-4" style="max-width: 1100px;">
+                    <div class="d-flex justify-content-between align-items-start mb-3 gap-3 flex-wrap">
+                        <div>
+                            <h4 class="mb-1">Fast medicin</h4>
+                            <div class="text-muted small">
+                                Oversigten viser én række pr. fast medicintidspunkt og den aktuelle registrering. PN-medicin registreres i afsnittet nedenfor; fuld historik/audit håndteres i UC06.
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (_loadingFixedMedication)
+                    {
+                        <div>Indlæser fast medicin...</div>
+                    }
+                    else if (_fixedMedications == null)
+                    {
+                        <div class="text-danger">Kunne ikke hente fast medicin.</div>
+                    }
+                    else if (!_fixedMedications.Any())
+                    {
+                        <div>Ingen planlagt fast medicin.</div>
+                    }
+                    else
+                    {
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Medicin</th>
+                                    <th style="width: 16rem;">Plan</th>
+                                    <th style="width: 18rem;">Status</th>
+                                    <th style="width: 22rem;">Handling</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var med in _fixedMedications)
+                                {
+                                    var isExpanded = _expandedFixedMedicationId == med.FixedMedicationId;
+                                    var isWorking = _workingFixedMedicationId == med.FixedMedicationId;
+                                    var hasGivenAtError = _givenAtInputErrors.TryGetValue(med.FixedMedicationId, out var givenAtInputError);
+                                    var hasPlanError = _medicationPlanErrors.TryGetValue(med.FixedMedicationId, out var planError);
+                                    var editState = GetMedicationEditState(med);
+
+                                    <tr>
+                                        <td>
+                                            <div class="fw-semibold">@med.Name</div>
+                                            @if (!med.IsActive)
+                                            {
+                                                <span class="badge bg-light text-dark border">Inaktiv</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div>@GetMedicationPlanLabel(med)</div>
+                                            @if (med.IsActive && !IsWithinPlannedWindow(med))
+                                            {
+                                                <div class="text-muted small">Udenfor planlagt tidsvindue</div>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!med.IsActive)
+                                            {
+                                                <span class="badge bg-light text-dark border">Inaktiv</span>
+                                            }
+                                            else if (IsGivenToday(med))
+                                            {
+                                                <span class="badge bg-success text-white">Givet i dag @med.GivenAt.Value.ToLocalTime().ToString("HH:mm", CultureInfo.InvariantCulture)</span>
+                                            }
+                                            else if (med.IsGiven && med.GivenAt.HasValue)
+                                            {
+                                                <span class="badge bg-warning text-dark">Sidst givet @FormatGivenDateTime(med.GivenAt)</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary text-white">Ikke givet i dag</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-2 flex-wrap">
+                                                <button class="btn btn-outline-dark btn-sm"
+                                                        @onclick="@(async () => await RegisterFixedMedicationNowAsync(med))"
+                                                        disabled="@(isWorking || !med.IsActive)">
+                                                    @if (isWorking)
+                                                    {
+                                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                                    }
+                                                    Registrer givet
+                                                </button>
+
+                                                <button class="btn btn-outline-secondary btn-sm"
+                                                        @onclick="@(async () => await ToggleMedicationDetailsAsync(med))"
+                                                        disabled="@isWorking">
+                                                    @if (isExpanded)
+                                                    {
+                                                        <span>Skjul</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <AuthorizeView Roles="Leder,Vagtansvarlig">
+                                                            <Authorized>Ret registrering / medicinplan</Authorized>
+                                                            <NotAuthorized>Ret registrering</NotAuthorized>
+                                                        </AuthorizeView>
+                                                    }
+                                                </button>
+                                            </div>
+                                            @if (!med.IsActive)
+                                            {
+                                                <div class="text-muted small mt-1">Inaktiv medicinplan kan ikke registreres som givet.</div>
+                                            }
+                                        </td>
+                                    </tr>
+
+                                    @if (isExpanded)
+                                    {
+                                        <tr class="bg-light">
+                                            <td colspan="4" class="p-3 border-bottom">
+                                                <div class="row g-4">
+                                                    <div class="col-lg-6">
+                                                        <div class="border rounded p-3 bg-white h-100">
+                                                            <h5 class="mb-3">Registrering</h5>
+                                                            <label class="form-label fw-bold" for="given-at-@med.FixedMedicationId">Givet tidspunkt</label>
+                                                            <input id="given-at-@med.FixedMedicationId"
+                                                                   type="datetime-local"
+                                                                   class="form-control form-control-sm @(hasGivenAtError ? "is-invalid" : string.Empty)"
+                                                                   value="@GetGivenAtInputValue(med)"
+                                                                   min="@MinimumGivenAtInputValue"
+                                                                   step="60"
+                                                                   aria-invalid="@(hasGivenAtError ? "true" : "false")"
+                                                                   @oninput="@(e => SetGivenAtInputValue(med.FixedMedicationId, e.Value))"
+                                                                   @onchange="@(e => SetGivenAtInputValue(med.FixedMedicationId, e.Value))" />
+                                                            @if (hasGivenAtError)
+                                                            {
+                                                                <div class="invalid-feedback d-block">@givenAtInputError</div>
+                                                            }
+                                                            else
+                                                            {
+                                                                <div class="form-text">Tomt felt registrerer med serverens nuværende tidspunkt.</div>
+                                                            }
+
+                                                            <div class="d-flex gap-2 flex-wrap mt-3">
+                                                                <button class="btn btn-outline-dark btn-sm"
+                                                                        @onclick="@(async () => await SaveFixedMedicationRegistrationAsync(med))"
+                                                                        disabled="@(isWorking || !med.IsActive)">
+                                                                    Gem aktuel registrering
+                                                                </button>
+
+                                                                @if (med.IsGiven)
+                                                                {
+                                                                    <button class="btn btn-outline-danger btn-sm"
+                                                                            @onclick="@(async () => await CancelFixedMedicationAsync(med))"
+                                                                            disabled="@isWorking">
+                                                                        Annuller aktuel registrering
+                                                                    </button>
+                                                                }
+                                                            </div>
+                                                            <div class="form-text mt-2">
+                                                                UC04 viser og ændrer kun den aktuelle registrering. Historik og audit håndteres i senere use cases.
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    <AuthorizeView Roles="Leder,Vagtansvarlig">
+                                                        <Authorized>
+                                                            <div class="col-lg-6">
+                                                                <div class="border rounded p-3 bg-white h-100">
+                                                                    <h5 class="mb-3">Medicinplan (fast tidspunkt)</h5>
+                                                                    @if (hasPlanError)
+                                                                    {
+                                                                        <div class="alert alert-danger py-2" role="alert">@planError</div>
+                                                                    }
+
+                                                                    <div class="mb-2">
+                                                                        <label class="form-label fw-bold" for="med-name-@med.FixedMedicationId">Navn</label>
+                                                                        <input id="med-name-@med.FixedMedicationId"
+                                                                               class="form-control form-control-sm"
+                                                                               value="@editState.Name"
+                                                                               maxlength="100"
+                                                                               @oninput="@(e => SetMedicationName(med.FixedMedicationId, e.Value))"
+                                                                               @onchange="@(e => SetMedicationName(med.FixedMedicationId, e.Value))" />
+                                                                    </div>
+
+                                                                    <div class="mb-2">
+                                                                        <label class="form-label fw-bold" for="planned-time-@med.FixedMedicationId">Fast klokkeslæt</label>
+                                                                        <input id="planned-time-@med.FixedMedicationId"
+                                                                               type="time"
+                                                                               class="form-control form-control-sm"
+                                                                               value="@editState.PlannedTime"
+                                                                               step="60"
+                                                                               @oninput="@(e => SetMedicationPlannedTime(med.FixedMedicationId, e.Value))"
+                                                                               @onchange="@(e => SetMedicationPlannedTime(med.FixedMedicationId, e.Value))" />
+                                                                    </div>
+
+                                                                    <div class="form-check mb-3">
+                                                                        <input id="active-@med.FixedMedicationId"
+                                                                               class="form-check-input"
+                                                                               type="checkbox"
+                                                                               @bind="editState.IsActive" />
+                                                                        <label class="form-check-label" for="active-@med.FixedMedicationId">Aktiv medicinplan</label>
+                                                                    </div>
+
+                                                                    <button class="btn btn-outline-dark btn-sm"
+                                                                            @onclick="@(async () => await SaveMedicationPlanAsync(med))"
+                                                                            disabled="@isWorking">
+                                                                        Gem medicinplan
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                        </Authorized>
+                                                    </AuthorizeView>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+
+                <div class="border border-dark rounded p-4 bg-white mt-4" style="max-width: 1100px;">
+                    <div class="d-flex justify-content-between align-items-start mb-3 gap-3 flex-wrap">
+                        <div>
+                            <h4 class="mb-1">PN-medicin</h4>
+                            <div class="text-muted small">
+                                UC05 registrerer PN-medicin givet ved behov. Hver registrering gemmes med borger, bruger, tidspunkt og aktiv vagt.
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(_pnMedicationError))
+                    {
+                        <div class="alert alert-danger py-2" role="alert">@_pnMedicationError</div>
+                    }
+
+                    <div class="border rounded p-3 bg-light mb-4">
+                        <h5 class="mb-3">Registrer PN-medicin</h5>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label fw-bold" for="pn-name">Medicin</label>
+                                <input id="pn-name"
+                                       class="form-control form-control-sm"
+                                       maxlength="100"
+                                       placeholder="Fx Panodil"
+                                       @bind="_pnForm.MedicineName"
+                                       @bind:event="oninput" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-bold" for="pn-dose">Dosis</label>
+                                <input id="pn-dose"
+                                       class="form-control form-control-sm"
+                                       maxlength="60"
+                                       placeholder="Fx 1 tablet"
+                                       @bind="_pnForm.Dose"
+                                       @bind:event="oninput" />
+                            </div>
+                            <div class="col-md-5">
+                                <label class="form-label fw-bold" for="pn-given-at">Givet tidspunkt</label>
+                                <input id="pn-given-at"
+                                       type="datetime-local"
+                                       class="form-control form-control-sm"
+                                       min="@MinimumGivenAtInputValue"
+                                       step="60"
+                                       value="@_pnForm.GivenAtInput"
+                                       @oninput="@(e => SetPnGivenAtInputValue(e.Value))"
+                                       @onchange="@(e => SetPnGivenAtInputValue(e.Value))" />
+                                <div class="form-text">Tomt felt registrerer med serverens nuværende tidspunkt.</div>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-bold" for="pn-reason">Årsag / behov</label>
+                                <textarea id="pn-reason"
+                                          class="form-control form-control-sm"
+                                          maxlength="250"
+                                          rows="2"
+                                          placeholder="Fx smerter, uro eller andet konkret behov"
+                                          @bind="_pnForm.Reason"
+                                          @bind:event="oninput"></textarea>
+                            </div>
+                            <div class="col-12 d-flex align-items-center gap-3 flex-wrap">
+                                <button class="btn btn-outline-dark btn-sm"
+                                        @onclick="RegisterPnMedicationAsync"
+                                        disabled="@_savingPnMedication">
+                                    @if (_savingPnMedication)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    }
+                                    Registrer PN-medicin
+                                </button>
+                                <span class="text-muted small">Aktiv vagt: <strong>@(_activeShiftContext?.DisplayName ?? "Ingen valgt")</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (_loadingPnMedication)
+                    {
+                        <div>Indlæser PN-medicin...</div>
+                    }
+                    else if (_pnMedications == null)
+                    {
+                        <div class="text-danger">Kunne ikke hente PN-medicin.</div>
+                    }
+                    else if (!_pnMedications.Any())
+                    {
+                        <div>Ingen PN-medicin registreret for borgeren endnu.</div>
+                    }
+                    else
+                    {
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Medicin</th>
+                                    <th>Dosis</th>
+                                    <th>Årsag / behov</th>
+                                    <th style="width: 10rem;">Vagt</th>
+                                    <th style="width: 12rem;">Givet</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var med in _pnMedications)
+                                {
+                                    <tr>
+                                        <td>@med.MedicineName</td>
+                                        <td>@med.Dose</td>
+                                        <td>@med.Reason</td>
+                                        <td>@med.ShiftDisplayName</td>
+                                        <td>@FormatGivenDateTime(med.GivenAtUtc)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+
+                <div class="border border-dark rounded p-4 bg-white mt-4" style="max-width: 1100px;">
+                    <div class="d-flex justify-content-between align-items-start mb-3 gap-3 flex-wrap">
+                        <div>
+                            <h4 class="mb-1">Historik / audit-log</h4>
+                            <div class="text-muted small">
+                                UC06 viser centrale hændelser for borgeren. Audit oprettes server-side og kan ikke oprettes direkte fra klienten.
+                            </div>
+                        </div>
+                        <button class="btn btn-outline-secondary btn-sm"
+                                @onclick="LoadAuditEventsAsync"
+                                disabled="@_loadingAuditEvents">
+                            @if (_loadingAuditEvents)
+                            {
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            }
+                            Opdatér historik
+                        </button>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(_auditEventsError))
+                    {
+                        <div class="alert alert-danger py-2" role="alert">@_auditEventsError</div>
+                    }
+
+                    @if (_loadingAuditEvents)
+                    {
+                        <div>Indlæser historik...</div>
+                    }
+                    else if (_auditEvents == null)
+                    {
+                        <div class="text-danger">Kunne ikke hente historik.</div>
+                    }
+                    else if (!_auditEvents.Any())
+                    {
+                        <div>Der er endnu ingen historik for borgeren.</div>
+                    }
+                    else
+                    {
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10rem;">Tidspunkt</th>
+                                    <th style="width: 14rem;">Hændelse</th>
+                                    <th>Beskrivelse</th>
+                                    <th style="width: 12rem;">Bruger</th>
+                                    <th style="width: 10rem;">Vagt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var auditEvent in _auditEvents)
+                                {
+                                    <tr>
+                                        <td>@FormatAuditDateTime(auditEvent.CreatedAtUtc)</td>
+                                        <td>@GetAuditActionLabel(auditEvent.Action)</td>
+                                        <td>@auditEvent.Description</td>
+                                        <td>@FormatAuditUser(auditEvent)</td>
+                                        <td>@(auditEvent.ShiftDisplayName ?? "-")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
             </div>
         }
-        <table class="table table-borderless m-0">
-            <thead class="border-bottom border-dark">
-                <tr>
-                    <th class="p-3 border-end border-dark">Navn</th>
-                    <th class="p-3 border-end border-dark" style="width: 15rem;">Borger-ID</th>
-                    <th class="p-3 border-end border-dark" style="width: 15rem;">Status</th>
-                    <th class="p-3" style="width: 15rem;">Handling</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var c in _filteredCitizens)
-                {
-                    <tr class="border-bottom">
-                        <td class="p-3">@c.Name</td>
-                        <td class="p-3">@c.CitizenId</td>
-                        <td class="p-3 align-middle">
-                            <span class="badge @GetStatusBadgeClass(c.Status)">
-                                @c.Status
-                            </span>
-                        </td>
-                        <td class="p-3 align-middle">
-                            <button class="btn btn-outline-dark btn-sm px-4" @onclick="() => OpenCitizen(c)">�bn</button>
-                        </td>
+        else
+        {
+            @if (_error)
+            {
+                <div class="alert alert-danger m-3" role="alert">
+                    Fejl: @_errorMessage
+                </div>
+            }
+            <table class="table table-borderless m-0">
+                <thead class="border-bottom border-dark">
+                    <tr>
+                        <th class="p-3 border-end border-dark">Navn</th>
+                        <th class="p-3 border-end border-dark" style="width: 15rem;">Borger-ID</th>
+                        <th class="p-3 border-end border-dark" style="width: 15rem;">Status</th>
+                        <th class="p-3" style="width: 15rem;">Handling</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    }
+                </thead>
+                <tbody>
+                    @foreach (var c in _filteredCitizens)
+                    {
+                        <tr class="border-bottom">
+                            <td class="p-3">@c.Name</td>
+                            <td class="p-3">@c.CitizenId</td>
+                            <td class="p-3 align-middle">
+                                <span class="badge @GetStatusBadgeClass(c.Status)">
+                                    @c.Status
+                                </span>
+                            </td>
+                            <td class="p-3 align-middle">
+                                <button class="btn btn-outline-dark btn-sm px-4" @onclick="@(async () => await OpenCitizenAsync(c))">Åbn</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
     }
 </div>
 
@@ -151,20 +553,53 @@ else
     private string _searchTerm = "";
 
     private string _userName = "";
-    private string _departmentName = "";
+    private string _departmentName = "Min afdeling";
+    private ActiveShiftContextDto? _activeShiftContext;
 
     private Citizen? _selectedCitizen = null;
     private string? _loadingStatus = null;
 
-    private IEnumerable<Citizen> _filteredCitizens => 
-        string.IsNullOrWhiteSpace(_searchTerm) 
-            ? _citizens 
+    private bool _loadingFixedMedication = false;
+    private List<FixedMedicationDto>? _fixedMedications = null;
+    private int? _workingFixedMedicationId = null;
+    private int? _expandedFixedMedicationId = null;
+
+    private bool _loadingPnMedication = false;
+    private bool _savingPnMedication = false;
+    private List<PnMedicationDto>? _pnMedications = null;
+    private string _pnMedicationError = string.Empty;
+    private PnMedicationFormState _pnForm = PnMedicationFormState.CreateDefault();
+
+    private bool _loadingAuditEvents = false;
+    private List<AuditEventDto>? _auditEvents = null;
+    private string _auditEventsError = string.Empty;
+
+    private const string GivenAtDisplayFormat = "yyyy-MM-ddTHH:mm";
+    private const string MinimumGivenAtInputValue = "2000-01-01T00:00";
+    private static readonly DateTime MinimumGivenAtLocal = new(2000, 1, 1, 0, 0, 0);
+    private static readonly string[] GivenAtInputFormats =
+    {
+        "yyyy-MM-ddTHH:mm",
+        "yyyy-MM-ddTHH:mm:ss",
+        "yyyy-MM-ddTHH:mm:ss.FFF",
+        "yyyy-MM-ddTHH:mm:ss.fffffff"
+    };
+
+    private readonly Dictionary<int, string> _givenAtInputs = new();
+    private readonly Dictionary<int, string> _givenAtInputErrors = new();
+    private readonly Dictionary<int, FixedMedicationEditState> _medicationEditStates = new();
+    private readonly Dictionary<int, string> _medicationPlanErrors = new();
+
+    private IEnumerable<Citizen> _filteredCitizens =>
+        string.IsNullOrWhiteSpace(_searchTerm)
+            ? _citizens
             : _citizens.Where(c => c.Name.Contains(_searchTerm, StringComparison.OrdinalIgnoreCase));
 
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         _userName = authState.User.Identity?.Name ?? "Ukendt bruger";
+        _activeShiftContext = ActiveShiftContextState.Current;
     }
 
     protected override async Task OnParametersSetAsync()
@@ -179,10 +614,20 @@ else
 
         try
         {
+            _activeShiftContext = ActiveShiftContextState.Current;
+
+            if (_activeShiftContext == null)
+            {
+                _loading = false;
+                NavigationManager.NavigateTo("/shift/select");
+                return;
+            }
+
             var currentDept = DepartmentId ?? 1;
-            
-            // Hardcode department name for now to fit wireframe format
-            _departmentName = currentDept == 1 ? "Afdeling A" : (currentDept == 2 ? "Afdeling B" : "Syd");
+
+            // Afdeling vises neutralt, fordi serveren udleder den sikre afdeling fra den autentificerede bruger.
+            // Route-parameteren bevares kun af hensyn til eksisterende klient/service-kontrakt.
+            _departmentName = "Min afdeling";
 
             _citizens = await CitizenService.GetCitizensByDepartmentAsync(currentDept);
         }
@@ -210,6 +655,7 @@ else
         {
             _loadingStatus = newValue;
             var currentDept = DepartmentId ?? 1;
+
             // Optimistic update
             var oldStatus = citizen.Status;
             citizen.Status = newStatus;
@@ -228,6 +674,7 @@ else
                 _error = false;
                 _errorMessage = string.Empty;
                 citizen.Status = result.Status;
+                await LoadAuditEventsAsync();
             }
         }
         catch (Exception ex)
@@ -240,14 +687,18 @@ else
         {
             _loadingStatus = null;
         }
+
         StateHasChanged();
     }
 
-    private void OpenCitizen(Citizen citizen)
+    private async Task OpenCitizenAsync(Citizen citizen)
     {
         _selectedCitizen = citizen;
         _error = false;
         _errorMessage = string.Empty;
+        await LoadFixedMedicationAsync();
+        await LoadPnMedicationAsync();
+        await LoadAuditEventsAsync();
     }
 
     private void CloseCitizen()
@@ -255,6 +706,749 @@ else
         _selectedCitizen = null;
         _error = false;
         _errorMessage = string.Empty;
+        _fixedMedications = null;
+        _pnMedications = null;
+        _pnMedicationError = string.Empty;
+        _pnForm = PnMedicationFormState.CreateDefault();
+        _auditEvents = null;
+        _auditEventsError = string.Empty;
+        _givenAtInputs.Clear();
+        _givenAtInputErrors.Clear();
+        _medicationEditStates.Clear();
+        _medicationPlanErrors.Clear();
+        _expandedFixedMedicationId = null;
+    }
+
+    private async Task LoadFixedMedicationAsync()
+    {
+        if (_selectedCitizen == null)
+        {
+            return;
+        }
+
+        _loadingFixedMedication = true;
+
+        try
+        {
+            var meds = await FixedMedicationApi.GetFixedMedicationsForCitizenAsync(_selectedCitizen.CitizenId);
+            _fixedMedications = meds?.ToList();
+
+            if (_fixedMedications != null)
+            {
+                SyncGivenAtInputs(_fixedMedications);
+                SyncMedicationEditStates(_fixedMedications);
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = true;
+            _errorMessage = $"Fejl under hentning af fast medicin: {ex.Message}";
+            _fixedMedications = null;
+            _givenAtInputs.Clear();
+            _givenAtInputErrors.Clear();
+            _medicationEditStates.Clear();
+            _medicationPlanErrors.Clear();
+        }
+        finally
+        {
+            _loadingFixedMedication = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadPnMedicationAsync()
+    {
+        if (_selectedCitizen == null)
+        {
+            return;
+        }
+
+        _loadingPnMedication = true;
+        _pnMedicationError = string.Empty;
+
+        try
+        {
+            var meds = await PnMedicationApi.GetPnMedicationsForCitizenAsync(_selectedCitizen.CitizenId);
+            _pnMedications = meds?.ToList();
+        }
+        catch (Exception ex)
+        {
+            _pnMedicationError = $"Fejl under hentning af PN-medicin: {ex.Message}";
+            _pnMedications = null;
+        }
+        finally
+        {
+            _loadingPnMedication = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadAuditEventsAsync()
+    {
+        if (_selectedCitizen == null)
+        {
+            return;
+        }
+
+        _loadingAuditEvents = true;
+        _auditEventsError = string.Empty;
+
+        try
+        {
+            var events = await AuditEventsApi.GetAuditEventsForCitizenAsync(_selectedCitizen.CitizenId);
+            _auditEvents = events?.ToList();
+        }
+        catch (Exception ex)
+        {
+            _auditEventsError = $"Fejl under hentning af historik: {ex.Message}";
+            _auditEvents = null;
+        }
+        finally
+        {
+            _loadingAuditEvents = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RegisterPnMedicationAsync()
+    {
+        if (_selectedCitizen == null)
+        {
+            return;
+        }
+
+        _activeShiftContext = ActiveShiftContextState.Current;
+        if (_activeShiftContext == null)
+        {
+            _pnMedicationError = "Der er ikke valgt aktiv vagt. Vælg dagvagt, aftenvagt eller nattevagt først.";
+            NavigationManager.NavigateTo("/shift/select");
+            return;
+        }
+
+        if (!TryCreatePnMedicationRequest(out var request, out var validationError))
+        {
+            _pnMedicationError = validationError;
+            return;
+        }
+
+        try
+        {
+            _savingPnMedication = true;
+            _pnMedicationError = string.Empty;
+
+            var result = await PnMedicationApi.RegisterPnMedicationAsync(_selectedCitizen.CitizenId, request);
+            if (result == null)
+            {
+                _pnMedicationError = "Kunne ikke registrere PN-medicin. Serveren returnerede ikke en registrering.";
+                return;
+            }
+
+            _pnForm = PnMedicationFormState.CreateDefault();
+            await LoadPnMedicationAsync();
+            await LoadAuditEventsAsync();
+        }
+        catch (Exception ex)
+        {
+            _pnMedicationError = $"Fejl under registrering af PN-medicin: {ex.Message}";
+        }
+        finally
+        {
+            _savingPnMedication = false;
+            StateHasChanged();
+        }
+    }
+
+
+    private void SetPnGivenAtInputValue(object? value)
+    {
+        _pnForm.GivenAtInput = NormalizeGivenAtInputValue(value);
+        _pnMedicationError = string.Empty;
+    }
+
+    private bool TryCreatePnMedicationRequest(out RegisterPnMedicationRequest request, out string validationError)
+    {
+        request = new RegisterPnMedicationRequest();
+        validationError = string.Empty;
+
+        var medicineName = _pnForm.MedicineName.Trim();
+        if (string.IsNullOrWhiteSpace(medicineName))
+        {
+            validationError = "Medicinens navn mangler. Skriv et navn, fx Panodil.";
+            return false;
+        }
+
+        var dose = _pnForm.Dose.Trim();
+        if (string.IsNullOrWhiteSpace(dose))
+        {
+            validationError = "Dosis mangler. Skriv dosis, fx 1 tablet eller 5 mg.";
+            return false;
+        }
+
+        var reason = _pnForm.Reason.Trim();
+        if (string.IsNullOrWhiteSpace(reason))
+        {
+            validationError = "Årsag/behov mangler. Skriv kort hvorfor PN-medicinen gives.";
+            return false;
+        }
+
+        if (!TryResolvePnGivenAtUtc(out var givenAtUtc, out validationError))
+        {
+            return false;
+        }
+
+        request = new RegisterPnMedicationRequest
+        {
+            MedicineName = medicineName,
+            Dose = dose,
+            Reason = reason,
+            GivenAt = givenAtUtc,
+            ShiftType = _activeShiftContext!.ShiftType
+        };
+
+        return true;
+    }
+
+    private bool TryResolvePnGivenAtUtc(out DateTime? givenAtUtc, out string validationError)
+    {
+        givenAtUtc = null;
+        validationError = string.Empty;
+
+        var value = _pnForm.GivenAtInput?.Trim() ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return true;
+        }
+
+        if (!TryParseGivenAtInput(value, out var parsedGivenAt))
+        {
+            validationError = "Tidspunktet for PN-medicin kunne ikke læses. Vælg dato og klokkeslæt igen. Tomt felt er også tilladt og registrerer med serverens nuværende tidspunkt.";
+            return false;
+        }
+
+        var localComparisonValue = parsedGivenAt.Kind == DateTimeKind.Utc
+            ? parsedGivenAt.ToLocalTime()
+            : parsedGivenAt;
+
+        if (localComparisonValue < MinimumGivenAtLocal)
+        {
+            validationError = "Tidspunktet for PN-medicin er ugyldigt, fordi det ligger før 01-01-2000 kl. 00:00. Vælg et nyere tidspunkt eller ryd feltet for at bruge serverens nuværende tidspunkt.";
+            return false;
+        }
+
+        givenAtUtc = ConvertParsedGivenAtToUtc(parsedGivenAt);
+        return true;
+    }
+
+    private Task ToggleMedicationDetailsAsync(FixedMedicationDto med)
+    {
+        _expandedFixedMedicationId = _expandedFixedMedicationId == med.FixedMedicationId
+            ? null
+            : med.FixedMedicationId;
+
+        _givenAtInputErrors.Remove(med.FixedMedicationId);
+        _medicationPlanErrors.Remove(med.FixedMedicationId);
+        _givenAtInputs[med.FixedMedicationId] = GetDefaultGivenAtInputValue(med);
+        _medicationEditStates[med.FixedMedicationId] = CreateMedicationEditState(med);
+
+        return Task.CompletedTask;
+    }
+
+    private async Task RegisterFixedMedicationNowAsync(FixedMedicationDto med)
+    {
+        _givenAtInputs[med.FixedMedicationId] = string.Empty;
+        await PersistFixedMedicationRegistrationAsync(med, useInputValue: false);
+    }
+
+    private async Task SaveFixedMedicationRegistrationAsync(FixedMedicationDto med)
+    {
+        await PersistFixedMedicationRegistrationAsync(med, useInputValue: true);
+    }
+
+    private async Task PersistFixedMedicationRegistrationAsync(FixedMedicationDto med, bool useInputValue)
+    {
+        if (_selectedCitizen == null)
+        {
+            return;
+        }
+
+        DateTime? givenAtUtc = null;
+
+        if (useInputValue && !TryResolveGivenAtUtc(med.FixedMedicationId, out givenAtUtc, out var validationError))
+        {
+            _givenAtInputErrors[med.FixedMedicationId] = validationError;
+            _error = true;
+            _errorMessage = validationError;
+            return;
+        }
+
+        _givenAtInputErrors.Remove(med.FixedMedicationId);
+
+        try
+        {
+            _workingFixedMedicationId = med.FixedMedicationId;
+
+            var result = await FixedMedicationApi.RegisterFixedMedicationGivenAsync(
+                _selectedCitizen.CitizenId,
+                med.FixedMedicationId,
+                useInputValue ? givenAtUtc : null);
+
+            if (result == null)
+            {
+                _error = true;
+                _errorMessage = "Kunne ikke registrere medicin som givet. Serveren returnerede ikke en registrering.";
+                return;
+            }
+
+            _error = false;
+            _errorMessage = string.Empty;
+            _givenAtInputs[med.FixedMedicationId] = GetDefaultGivenAtInputValue(result);
+
+            // Single source of truth: reload fra server efter mutation
+            await LoadFixedMedicationAsync();
+            await LoadAuditEventsAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = true;
+            _errorMessage = $"Fejl under registrering af medicin: {ex.Message}";
+        }
+        finally
+        {
+            _workingFixedMedicationId = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CancelFixedMedicationAsync(FixedMedicationDto med)
+    {
+        if (_selectedCitizen == null)
+        {
+            return;
+        }
+
+        _givenAtInputErrors.Remove(med.FixedMedicationId);
+
+        try
+        {
+            _workingFixedMedicationId = med.FixedMedicationId;
+
+            var result = await FixedMedicationApi.CancelFixedMedicationGivenAsync(
+                _selectedCitizen.CitizenId,
+                med.FixedMedicationId);
+
+            if (result == null)
+            {
+                _error = true;
+                _errorMessage = "Kunne ikke annullere den aktuelle medicinregistrering. Serveren returnerede ikke en registrering.";
+                return;
+            }
+
+            _error = false;
+            _errorMessage = string.Empty;
+
+            _givenAtInputs[med.FixedMedicationId] = DateTime.Now.ToString(GivenAtDisplayFormat, CultureInfo.InvariantCulture);
+
+            // Single source of truth: reload fra server efter mutation
+            await LoadFixedMedicationAsync();
+            await LoadAuditEventsAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = true;
+            _errorMessage = $"Fejl under annullering af aktuel medicinregistrering: {ex.Message}";
+        }
+        finally
+        {
+            _workingFixedMedicationId = null;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SaveMedicationPlanAsync(FixedMedicationDto med)
+    {
+        if (_selectedCitizen == null)
+        {
+            return;
+        }
+
+        var editState = GetMedicationEditState(med);
+        if (!TryCreatePlanRequest(editState, out var request, out var validationError))
+        {
+            _medicationPlanErrors[med.FixedMedicationId] = validationError;
+            _error = true;
+            _errorMessage = validationError;
+            return;
+        }
+
+        _medicationPlanErrors.Remove(med.FixedMedicationId);
+
+        try
+        {
+            _workingFixedMedicationId = med.FixedMedicationId;
+
+            var result = await FixedMedicationApi.UpdateFixedMedicationPlanAsync(
+                _selectedCitizen.CitizenId,
+                med.FixedMedicationId,
+                request);
+
+            if (result == null)
+            {
+                _error = true;
+                _errorMessage = "Kunne ikke gemme medicinplanen. Serveren returnerede ikke en registrering.";
+                return;
+            }
+
+            _error = false;
+            _errorMessage = string.Empty;
+            _medicationEditStates[med.FixedMedicationId] = CreateMedicationEditState(result);
+
+            await LoadFixedMedicationAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = true;
+            _errorMessage = $"Fejl under gem af medicinplan: {ex.Message}";
+        }
+        finally
+        {
+            _workingFixedMedicationId = null;
+            StateHasChanged();
+        }
+    }
+
+    private string GetGivenAtInputValue(FixedMedicationDto medication)
+    {
+        if (_givenAtInputs.TryGetValue(medication.FixedMedicationId, out var value))
+        {
+            return value;
+        }
+
+        var defaultValue = GetDefaultGivenAtInputValue(medication);
+        _givenAtInputs[medication.FixedMedicationId] = defaultValue;
+        return defaultValue;
+    }
+
+    private void SetGivenAtInputValue(int fixedMedicationId, object? value)
+    {
+        _givenAtInputs[fixedMedicationId] = NormalizeGivenAtInputValue(value);
+        _givenAtInputErrors.Remove(fixedMedicationId);
+
+        if (_error && IsMedicationTimeError(_errorMessage))
+        {
+            _error = false;
+            _errorMessage = string.Empty;
+        }
+    }
+
+    private bool TryResolveGivenAtUtc(int fixedMedicationId, out DateTime? givenAtUtc, out string validationError)
+    {
+        givenAtUtc = null;
+        validationError = string.Empty;
+
+        if (!_givenAtInputs.TryGetValue(fixedMedicationId, out var value) || string.IsNullOrWhiteSpace(value))
+        {
+            // UC04-regel: tomt tidspunkt er tilladt og betyder, at serveren bruger nuværende tidspunkt.
+            return true;
+        }
+
+        var trimmedValue = value.Trim();
+
+        if (!TryParseGivenAtInput(trimmedValue, out var parsedGivenAt))
+        {
+            validationError = "Tidspunktet kunne ikke læses. Vælg dato og klokkeslæt igen. Tomt felt er også tilladt og registrerer med serverens nuværende tidspunkt.";
+            return false;
+        }
+
+        var localComparisonValue = parsedGivenAt.Kind == DateTimeKind.Utc
+            ? parsedGivenAt.ToLocalTime()
+            : parsedGivenAt;
+
+        if (localComparisonValue < MinimumGivenAtLocal)
+        {
+            validationError = "Tidspunktet er ugyldigt, fordi det ligger før 01-01-2000 kl. 00:00. Vælg et nyere tidspunkt eller ryd feltet for at bruge serverens nuværende tidspunkt.";
+            return false;
+        }
+
+        givenAtUtc = ConvertParsedGivenAtToUtc(parsedGivenAt);
+        return true;
+    }
+
+    private static string NormalizeGivenAtInputValue(object? value)
+    {
+        return value switch
+        {
+            null => string.Empty,
+            DateTime dateTime => dateTime.ToString(GivenAtDisplayFormat, CultureInfo.InvariantCulture),
+            _ => value.ToString()?.Trim() ?? string.Empty
+        };
+    }
+
+    private static bool TryParseGivenAtInput(string value, out DateTime parsedGivenAt)
+    {
+        if (DateTime.TryParseExact(
+                value,
+                GivenAtInputFormats,
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.AllowWhiteSpaces,
+                out parsedGivenAt))
+        {
+            return true;
+        }
+
+        // Fallback til browser/WebView-varianter, hvis ChangeEventArgs.Value leveres i en lokal kulturstreng.
+        if (DateTime.TryParse(value, CultureInfo.CurrentCulture, DateTimeStyles.AllowWhiteSpaces, out parsedGivenAt))
+        {
+            return true;
+        }
+
+        if (DateTime.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AllowWhiteSpaces, out parsedGivenAt))
+        {
+            return true;
+        }
+
+        parsedGivenAt = default;
+        return false;
+    }
+
+    private static DateTime ConvertParsedGivenAtToUtc(DateTime parsedGivenAt)
+    {
+        return parsedGivenAt.Kind switch
+        {
+            DateTimeKind.Utc => parsedGivenAt,
+            DateTimeKind.Local => parsedGivenAt.ToUniversalTime(),
+            _ => DateTime.SpecifyKind(parsedGivenAt, DateTimeKind.Local).ToUniversalTime()
+        };
+    }
+
+    private static bool IsMedicationTimeError(string message)
+    {
+        return message.Contains("Tidspunkt", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("serverens nuværende tidspunkt", StringComparison.OrdinalIgnoreCase)
+            || message.Contains("Serveren afviste tidspunktet", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void SyncGivenAtInputs(IEnumerable<FixedMedicationDto> medications)
+    {
+        var medicationIds = medications
+            .Select(m => m.FixedMedicationId)
+            .ToHashSet();
+
+        foreach (var fixedMedicationId in _givenAtInputs.Keys.ToList())
+        {
+            if (!medicationIds.Contains(fixedMedicationId))
+            {
+                _givenAtInputs.Remove(fixedMedicationId);
+                _givenAtInputErrors.Remove(fixedMedicationId);
+            }
+        }
+
+        foreach (var medication in medications)
+        {
+            if (!_givenAtInputs.ContainsKey(medication.FixedMedicationId))
+            {
+                _givenAtInputs[medication.FixedMedicationId] = GetDefaultGivenAtInputValue(medication);
+            }
+        }
+    }
+
+    private void SyncMedicationEditStates(IEnumerable<FixedMedicationDto> medications)
+    {
+        var medicationIds = medications
+            .Select(m => m.FixedMedicationId)
+            .ToHashSet();
+
+        foreach (var fixedMedicationId in _medicationEditStates.Keys.ToList())
+        {
+            if (!medicationIds.Contains(fixedMedicationId))
+            {
+                _medicationEditStates.Remove(fixedMedicationId);
+                _medicationPlanErrors.Remove(fixedMedicationId);
+            }
+        }
+
+        foreach (var medication in medications)
+        {
+            _medicationEditStates[medication.FixedMedicationId] = CreateMedicationEditState(medication);
+        }
+    }
+
+    private FixedMedicationEditState GetMedicationEditState(FixedMedicationDto medication)
+    {
+        if (_medicationEditStates.TryGetValue(medication.FixedMedicationId, out var state))
+        {
+            return state;
+        }
+
+        state = CreateMedicationEditState(medication);
+        _medicationEditStates[medication.FixedMedicationId] = state;
+        return state;
+    }
+
+    private static FixedMedicationEditState CreateMedicationEditState(FixedMedicationDto medication)
+    {
+        return new FixedMedicationEditState
+        {
+            Name = medication.Name,
+            PlannedTime = FormatPlannedTime(medication.PlannedAt),
+            ScheduleDescription = string.IsNullOrWhiteSpace(medication.ScheduleDescription) ? "Dagligt" : medication.ScheduleDescription,
+            IsActive = medication.IsActive
+        };
+    }
+
+    private void SetMedicationName(int fixedMedicationId, object? value)
+    {
+        var state = GetOrCreateEmptyEditState(fixedMedicationId);
+        state.Name = value?.ToString()?.Trim() ?? string.Empty;
+        _medicationPlanErrors.Remove(fixedMedicationId);
+    }
+
+    private void SetMedicationPlannedTime(int fixedMedicationId, object? value)
+    {
+        var state = GetOrCreateEmptyEditState(fixedMedicationId);
+        state.PlannedTime = value?.ToString()?.Trim() ?? string.Empty;
+        _medicationPlanErrors.Remove(fixedMedicationId);
+    }
+
+    private void SetMedicationScheduleDescription(int fixedMedicationId, object? value)
+    {
+        var state = GetOrCreateEmptyEditState(fixedMedicationId);
+        state.ScheduleDescription = value?.ToString()?.Trim() ?? string.Empty;
+        _medicationPlanErrors.Remove(fixedMedicationId);
+    }
+
+    private FixedMedicationEditState GetOrCreateEmptyEditState(int fixedMedicationId)
+    {
+        if (_medicationEditStates.TryGetValue(fixedMedicationId, out var state))
+        {
+            return state;
+        }
+
+        state = new FixedMedicationEditState();
+        _medicationEditStates[fixedMedicationId] = state;
+        return state;
+    }
+
+    private static bool TryCreatePlanRequest(FixedMedicationEditState state, out UpdateFixedMedicationPlanRequest request, out string validationError)
+    {
+        request = new UpdateFixedMedicationPlanRequest();
+        validationError = string.Empty;
+
+        var name = state.Name.Trim();
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            validationError = "Medicinens navn mangler. Skriv et navn, fx Panodil 1g.";
+            return false;
+        }
+
+        var scheduleDescription = string.IsNullOrWhiteSpace(state.ScheduleDescription)
+            ? "Fast tidspunkt"
+            : state.ScheduleDescription.Trim();
+
+        if (!TryParsePlannedTime(state.PlannedTime, out var plannedAt))
+        {
+            validationError = "Planlagt klokkeslæt kunne ikke læses. Vælg klokkeslæt igen, fx 08:00.";
+            return false;
+        }
+
+        request = new UpdateFixedMedicationPlanRequest
+        {
+            Name = name,
+            PlannedAt = plannedAt,
+            ScheduleDescription = scheduleDescription,
+            IsActive = state.IsActive
+        };
+
+        return true;
+    }
+
+    private static bool TryParsePlannedTime(string value, out DateTime plannedAt)
+    {
+        plannedAt = default;
+
+        TimeSpan parsedTime;
+        if (TimeSpan.TryParseExact(value, @"hh\:mm", CultureInfo.InvariantCulture, out parsedTime)
+            || TimeSpan.TryParse(value, CultureInfo.CurrentCulture, out parsedTime)
+            || TimeSpan.TryParse(value, CultureInfo.InvariantCulture, out parsedTime))
+        {
+            plannedAt = new DateTime(2000, 1, 1, parsedTime.Hours, parsedTime.Minutes, 0, DateTimeKind.Unspecified);
+            return true;
+        }
+
+        return false;
+    }
+
+    private static string GetDefaultGivenAtInputValue(FixedMedicationDto medication)
+    {
+        if (medication.IsGiven && medication.GivenAt.HasValue)
+        {
+            return medication.GivenAt.Value.ToLocalTime().ToString(GivenAtDisplayFormat, CultureInfo.InvariantCulture);
+        }
+
+        return DateTime.Now.ToString(GivenAtDisplayFormat, CultureInfo.InvariantCulture);
+    }
+
+    private static string GetMedicationPlanLabel(FixedMedicationDto medication)
+    {
+        return $"Fast tidspunkt: kl. {FormatPlannedTime(medication.PlannedAt)}";
+    }
+
+    private static string FormatPlannedTime(DateTime value)
+    {
+        return value.ToString("HH:mm", CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatGivenDateTime(DateTime? value)
+    {
+        if (!value.HasValue)
+        {
+            return "-";
+        }
+
+        return value.Value.ToLocalTime().ToString("dd-MM HH:mm", CultureInfo.InvariantCulture);
+    }
+
+    private static bool IsGivenToday(FixedMedicationDto medication)
+    {
+        return medication.IsGiven
+            && medication.GivenAt.HasValue
+            && medication.GivenAt.Value.ToLocalTime().Date == DateTime.Now.Date;
+    }
+
+    private static bool IsWithinPlannedWindow(FixedMedicationDto medication)
+    {
+        var now = DateTime.Now.TimeOfDay;
+        var planned = medication.PlannedAt.TimeOfDay;
+        var delta = Math.Abs((now - planned).TotalMinutes);
+
+        // Simpel UC04-visning: bruges kun som vejledning, ikke som hård blokering.
+        return delta <= 120 || delta >= (24 * 60) - 120;
+    }
+
+    private static string FormatAuditDateTime(DateTime value)
+    {
+        return value.ToLocalTime().ToString("dd-MM HH:mm", CultureInfo.InvariantCulture);
+    }
+
+    private static string GetAuditActionLabel(string action)
+    {
+        return action switch
+        {
+            "CitizenStatusUpdated" => "Status ændret",
+            "FixedMedicationGiven" => "Fast medicin givet",
+            "FixedMedicationCancelled" => "Fast medicin annulleret",
+            "PnMedicationRegistered" => "PN-medicin registreret",
+            _ => string.IsNullOrWhiteSpace(action) ? "Ukendt hændelse" : action
+        };
+    }
+
+    private static string FormatAuditUser(AuditEventDto auditEvent)
+    {
+        if (!string.IsNullOrWhiteSpace(auditEvent.UserDisplayNameSnapshot))
+        {
+            return auditEvent.UserDisplayNameSnapshot;
+        }
+
+        return string.IsNullOrWhiteSpace(auditEvent.UserId) ? "Ukendt bruger" : auditEvent.UserId;
     }
 
     private string GetStatusBadgeClass(VIGOR.Shared.Enums.CitizenStatus status) => status switch
@@ -272,5 +1466,28 @@ else
         VIGOR.Shared.Enums.CitizenStatus.Green => "btn-success",
         _ => "btn-secondary"
     };
-}
 
+    private sealed class PnMedicationFormState
+    {
+        public string MedicineName { get; set; } = string.Empty;
+        public string Dose { get; set; } = string.Empty;
+        public string Reason { get; set; } = string.Empty;
+        public string GivenAtInput { get; set; } = string.Empty;
+
+        public static PnMedicationFormState CreateDefault()
+        {
+            return new PnMedicationFormState
+            {
+                GivenAtInput = DateTime.Now.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture)
+            };
+        }
+    }
+
+    private sealed class FixedMedicationEditState
+    {
+        public string Name { get; set; } = string.Empty;
+        public string PlannedTime { get; set; } = "08:00";
+        public string ScheduleDescription { get; set; } = "Fast tidspunkt";
+        public bool IsActive { get; set; } = true;
+    }
+}

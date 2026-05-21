@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using VIGOR.Shared.Models;
 using VIGOR.Web.Data;
 using VIGOR.Web.Extensions;
 
@@ -191,4 +192,38 @@ static async Task SeedDataAsync(IServiceProvider serviceProvider)
         context.Employees.Add(new VIGOR.Shared.Models.Employee { IdentityUserId = staffUserForEmployee.Id, Name = "VIGOR Personale", DepartmentId = department2ForEmployees.DepartmentId });
     }
     await context.SaveChangesAsync();
+
+    // UC04 seed: Fast medicin (planlagte doser) – minimal runtime data
+    if (!await context.FixedMedications.AnyAsync())
+    {
+        var citizenIds = await context.Citizens
+            .AsNoTracking()
+            .Select(c => c.CitizenId)
+            .ToListAsync();
+
+        var todayUtc = DateTime.UtcNow.Date;
+
+        foreach (var citizenId in citizenIds)
+        {
+            context.FixedMedications.AddRange(
+                new FixedMedication
+                {
+                    CitizenId = citizenId,
+                    Name = "Panodil 1g",
+                    PlannedAt = todayUtc.AddHours(8),
+                    ScheduleDescription = "Dagligt",
+                    IsActive = true
+                },
+                new FixedMedication
+                {
+                    CitizenId = citizenId,
+                    Name = "Vitamin D",
+                    PlannedAt = todayUtc.AddHours(20),
+                    ScheduleDescription = "Dagligt",
+                    IsActive = true
+                });
+        }
+
+        await context.SaveChangesAsync();
+    }
 }

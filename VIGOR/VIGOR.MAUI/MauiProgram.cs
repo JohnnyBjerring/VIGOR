@@ -47,6 +47,11 @@ public static class MauiProgram
 			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IStartPageResolver, VIGOR.MAUI.Services.StartPageResolver>();
 			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.INavigationService, VIGOR.MAUI.Services.NavigationService>();
 			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.ICitizenService, VIGOR.Shared.Services.CitizenClientService>();
+			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IFixedMedicationApi, VIGOR.Shared.Services.FixedMedicationClientService>();
+			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IPnMedicationApi, VIGOR.Shared.Services.PnMedicationClientService>();
+			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IAuditEventsApi, VIGOR.Shared.Services.AuditEventsClientService>();
+			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IShiftSelectionApi, VIGOR.Shared.Services.ShiftSelectionClientService>();
+			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IActiveShiftContextState, VIGOR.Shared.Services.ActiveShiftContextState>();
 			
 			// Note: For Android Emulator change localhost to 10.0.2.2
 			var baseAddress = ResolveApiBaseAddress();

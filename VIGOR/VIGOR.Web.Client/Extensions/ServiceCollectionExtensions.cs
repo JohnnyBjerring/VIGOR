@@ -20,6 +20,11 @@ namespace VIGOR.Web.Client.Extensions
 
             // Minimal client-side implementation of ICitizenService that calls the existing API
             services.AddScoped<ICitizenService, CitizenClientService>();
+            services.AddScoped<IFixedMedicationApi, FixedMedicationClientService>();
+            services.AddScoped<IPnMedicationApi, PnMedicationClientService>();
+            services.AddScoped<IAuditEventsApi, AuditEventsClientService>();
+            services.AddScoped<IShiftSelectionApi, ShiftSelectionClientService>();
+            services.AddScoped<IActiveShiftContextState, ActiveShiftContextState>();
 
             return services;
         }

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using VIGOR.Shared.Interfaces.Services;
+using VIGOR.Shared.Services;
 using VIGOR.Web.Data;
 using VIGOR.Web.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -81,6 +82,11 @@ namespace VIGOR.Web.Extensions
             services.AddScoped<IIdentityGateway, IdentityGateway>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ICitizenService, CitizenService>();
+            services.AddScoped<IAuditService, AuditService>();
+            services.AddScoped<IFixedMedicationService, FixedMedicationService>();
+            services.AddScoped<IPnMedicationService, PnMedicationService>();
+            services.AddScoped<IShiftSelectionService, ShiftSelectionService>();
+            services.AddScoped<IActiveShiftContextState, ActiveShiftContextState>();
 
             // API Controllers
             services.AddControllers()

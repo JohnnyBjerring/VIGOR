@@ -1,0 +1,76 @@
+<mxfile host="Electron">
+  <diagram name="Side-1" id="AKVx57fGSh3k_eIwfHAE">
+    <mxGraphModel dx="1664" dy="1131" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#111827;fontColor=#ffffff;fontSize=24;fontStyle=1;spacing=12;arcSize=8;" value="Deployment diagram – VIGOR" vertex="1">
+          <mxGeometry height="60" width="760" x="420" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=13;fontColor=#374151;align=center;verticalAlign=middle;whiteSpace=wrap;" value="Overblik over hvordan klient, API, autentificering og database er placeret i første version" vertex="1">
+          <mxGeometry height="30" width="760" x="420" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="networkBoundary" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#9ca3af;strokeWidth=2;dashed=1;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="720" width="1460" x="70" y="160" as="geometry" />
+        </mxCell>
+        <mxCell id="networkLabel" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1;fontColor=#111827;align=left;verticalAlign=middle;whiteSpace=wrap;" value="Internt/lukket netværk på bostedet" vertex="1">
+          <mxGeometry height="30" width="430" x="100" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="staffActor" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=14;fontStyle=1;fontColor=#111827;" value="Personale" vertex="1">
+          <mxGeometry height="90" width="60" x="145" y="305" as="geometry" />
+        </mxCell>
+        <mxCell id="leaderActor" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;fontSize=14;fontStyle=1;fontColor=#111827;" value="Leder / vagtansvarlig" vertex="1">
+          <mxGeometry height="90" width="70" x="145" y="500" as="geometry" />
+        </mxCell>
+        <mxCell id="clientNode" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#92400e;fontSize=14;fontStyle=1;align=center;verticalAlign=top;spacing=12;arcSize=10;" value="&lt;b&gt;Windows-enhed / personale-PC&lt;/b&gt;&lt;br&gt;&lt;hr&gt;Kører VIGOR-klienten lokalt" vertex="1">
+          <mxGeometry height="260" width="320" x="320" y="285" as="geometry" />
+        </mxCell>
+        <mxCell id="clientArtifact" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#b45309;fontSize=13;align=left;verticalAlign=top;spacing=10;arcSize=8;" value="&lt;b&gt;VIGOR MAUI Blazor Hybrid&lt;/b&gt;&lt;br&gt;&lt;hr&gt;Blazor UI&lt;br&gt;Borgeroversigt&lt;br&gt;Statusopdatering&lt;br&gt;Fast medicin UI&lt;br&gt;HTTP-klient&lt;br&gt;JWT-token ved API-kald" vertex="1">
+          <mxGeometry height="170" width="260" x="350" y="350" as="geometry" />
+        </mxCell>
+        <mxCell id="serverNode" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#1e40af;fontSize=14;fontStyle=1;align=center;verticalAlign=top;spacing=12;arcSize=10;" value="&lt;b&gt;Intern server / API-host&lt;/b&gt;&lt;br&gt;&lt;hr&gt;Hoster backend og forretningslogik" vertex="1">
+          <mxGeometry height="390" width="390" x="780" y="240" as="geometry" />
+        </mxCell>
+        <mxCell id="apiArtifact" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#1e40af;fontSize=13;align=left;verticalAlign=top;spacing=10;arcSize=8;" value="&lt;b&gt;ASP.NET Core Web API&lt;/b&gt;&lt;br&gt;&lt;hr&gt;REST endpoints&lt;br&gt;Controllers&lt;br&gt;Application services&lt;br&gt;Server-side validering&lt;br&gt;Afdelingsbaseret adgangskontrol" vertex="1">
+          <mxGeometry height="150" width="320" x="815" y="315" as="geometry" />
+        </mxCell>
+        <mxCell id="authArtifact" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#6b21a8;fontSize=13;align=left;verticalAlign=top;spacing=10;arcSize=8;" value="&lt;b&gt;ASP.NET Identity + JWT&lt;/b&gt;&lt;br&gt;&lt;hr&gt;Login&lt;br&gt;Roller&lt;br&gt;Brugeridentitet&lt;br&gt;Token-baseret adgang&lt;br&gt;Personale / Vagtansvarlig / Leder" vertex="1">
+          <mxGeometry height="130" width="320" x="815" y="490" as="geometry" />
+        </mxCell>
+        <mxCell id="databaseNode" parent="1" style="shape=cylinder;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=none;fontSize=14;fontStyle=1;align=center;verticalAlign=top;spacing=12;" value="&lt;b&gt;Database&lt;/b&gt;&lt;br&gt;&lt;hr&gt;SQLite / lokal database&lt;br&gt;&lt;br&gt;Departments&lt;br&gt;Citizens&lt;br&gt;Employees&lt;br&gt;FixedMedications&lt;br&gt;AspNetUsers&lt;br&gt;Identity-tabeller" vertex="1">
+          <mxGeometry height="260" width="270" x="1240" y="320" as="geometry" />
+        </mxCell>
+        <mxCell id="publicScreen" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#991b1b;fontSize=14;fontStyle=1;align=center;verticalAlign=top;spacing=12;arcSize=10;dashed=1;" value="&lt;b&gt;Fremtidig public skærm&lt;/b&gt;&lt;br&gt;&lt;hr&gt;Anonym oversigtsskærm&lt;br&gt;Ingen personhenførbare oplysninger&lt;br&gt;&lt;br&gt;&lt;font color=&#39;#991b1b&#39;&gt;Planlagt senere use case&lt;/font&gt;" vertex="1">
+          <mxGeometry height="170" width="320" x="320" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="securityNote" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f9fafb;strokeColor=#6b7280;fontSize=13;align=left;verticalAlign=top;spacing=10;arcSize=8;" value="&lt;b&gt;Sikkerhed og afgrænsning&lt;/b&gt;&lt;br&gt;&lt;hr&gt;Systemet er tænkt som et internt system i første version.&lt;br&gt;Klienten kalder API’et med JWT-token.&lt;br&gt;Serveren udleder bruger, rolle og afdeling.&lt;br&gt;Klienten bestemmer ikke selv adgang eller afdeling.&lt;br&gt;Public/anonym visning er markeret som fremtidig udvidelse." vertex="1">
+          <mxGeometry height="145" width="620" x="780" y="690" as="geometry" />
+        </mxCell>
+        <mxCell id="eStaffClient" edge="1" parent="1" source="staffActor" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;" target="clientNode" value="bruger">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eLeaderClient" edge="1" parent="1" source="leaderActor" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;" target="clientNode" value="bruger">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eClientApi" edge="1" parent="1" source="clientNode" style="endArrow=block;html=1;rounded=1;strokeColor=#1f2937;strokeWidth=2;fontSize=12;edgeStyle=orthogonalEdgeStyle;" target="serverNode" value="HTTP/HTTPS API-kald&#xa;JWT-token">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eApiDb" edge="1" parent="1" source="serverNode" style="endArrow=block;html=1;rounded=1;strokeColor=#166534;strokeWidth=2;fontSize=12;edgeStyle=orthogonalEdgeStyle;" target="databaseNode" value="Entity Framework Core">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eAuthApi" edge="1" parent="1" source="authArtifact" style="endArrow=block;html=1;rounded=1;strokeColor=#6b21a8;strokeWidth=2;fontSize=12;" target="apiArtifact" value="autentificering&#xa;autorisation">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ePublicApi" edge="1" parent="1" source="publicScreen" style="endArrow=block;html=1;rounded=1;dashed=1;strokeColor=#991b1b;strokeWidth=2;fontSize=12;edgeStyle=orthogonalEdgeStyle;" target="serverNode" value="fremtidig anonym læsevisning">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="690" y="745" />
+              <mxPoint x="690" y="650" />
+              <mxPoint x="975" y="650" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

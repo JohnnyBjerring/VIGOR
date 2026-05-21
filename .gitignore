@@ -38,3 +38,6 @@ Thumbs.db
 ## User secrets
 secrets.json
 *.zip
+
+## Local build diagnostics
+build_error*.txt

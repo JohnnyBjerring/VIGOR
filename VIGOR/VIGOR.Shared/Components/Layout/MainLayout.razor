@@ -1,6 +1,8 @@
 @inherits LayoutComponentBase
+@implements IDisposable
 @inject VIGOR.Shared.Interfaces.Services.IAuthStateService AuthStateService
 @inject VIGOR.Shared.Interfaces.Services.IStartPageResolver StartPageResolver
+@inject VIGOR.Shared.Interfaces.Services.IActiveShiftContextState ActiveShiftContextState
 @inject NavigationManager NavigationManager
 
 <div class="d-flex w-100" style="min-height: 100vh;">
@@ -17,8 +19,19 @@
                         <NavLink class="btn btn-outline-dark w-100 text-start" href="@GetHomeLink(authContext.User)" Match="NavLinkMatch.All">Hjem</NavLink>
                     </div>
                     <div class="mb-3">
+                        <NavLink class="btn btn-outline-dark w-100 text-start" href="shift/select">Vælg vagt</NavLink>
+                    </div>
+                    <div class="mb-3">
                         <NavLink class="btn btn-outline-dark w-100 text-start" href="citizens">Borgere</NavLink>
                     </div>
+
+                    @if (ActiveShiftContextState.Current != null)
+                    {
+                        <div class="border rounded p-2 mb-3 small bg-light">
+                            <div class="text-muted">Aktiv vagt</div>
+                            <div class="fw-bold">@ActiveShiftContextState.Current.DisplayName</div>
+                        </div>
+                    }
 
                     <div class="mt-4 ms-2 text-muted small">
                         Version 0.2.1.19 alpha
@@ -60,6 +73,21 @@
 </div>
 
 @code {
+    protected override void OnInitialized()
+    {
+        ActiveShiftContextState.OnChange += HandleActiveShiftContextChanged;
+    }
+
+    private void HandleActiveShiftContextChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ActiveShiftContextState.OnChange -= HandleActiveShiftContextChanged;
+    }
+
     private string GetHomeLink(System.Security.Claims.ClaimsPrincipal user)
     {
         var roleName = user.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value 
@@ -72,6 +100,7 @@
 
     private async Task Logout()
     {
+        await ActiveShiftContextState.ClearAsync();
         await AuthStateService.MarkUserAsLoggedOut();
         NavigationManager.NavigateTo("/login", forceLoad: true);
     }

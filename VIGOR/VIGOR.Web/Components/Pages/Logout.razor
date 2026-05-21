@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @using VIGOR.Shared.Interfaces.Services
 @inject IAuthStateService AuthState
+@inject IActiveShiftContextState ActiveShiftContextState
 @inject NavigationManager Navigation
 
 <PageTitle>Logger ud – VIGOR</PageTitle>
@@ -11,6 +12,7 @@
     {
         if (firstRender)
         {
+            await ActiveShiftContextState.ClearAsync();
             await AuthState.MarkUserAsLoggedOut();
             Navigation.NavigateTo("/login", forceLoad: true);
         }

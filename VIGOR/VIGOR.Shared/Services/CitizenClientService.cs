@@ -41,5 +41,19 @@ namespace VIGOR.Shared.Services
 
             return await response.Content.ReadFromJsonAsync<Citizen>(_jsonOptions, cancellationToken: cancellationToken);
         }
+
+        public Task<Citizen?> UpdateCitizenStatusAsync(
+            int citizenId,
+            int departmentId,
+            CitizenStatus status,
+            string updatedByUserId,
+            string? userDisplayNameSnapshot = null,
+            ShiftType? shiftType = null,
+            CancellationToken cancellationToken = default)
+        {
+            // Klient-implementeringen sender ikke auditfelter.
+            // Serveren udleder bruger, afdeling og audit-kontekst fra JWT/Employee i API'et.
+            return UpdateCitizenStatusAsync(citizenId, departmentId, status, cancellationToken);
+        }
     }
 }

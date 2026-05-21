@@ -15,8 +15,8 @@ namespace VIGOR.UnitTests.Navigation
 
         [Theory]
         [InlineData("Leder", "/admin")]
-        [InlineData("Vagtansvarlig", "/schedule")]
-        [InlineData("Personale", "/home")]
+        [InlineData("Vagtansvarlig", "/shift/select")]
+        [InlineData("Personale", "/shift/select")]
         public void ResolveStartRoute_ShouldReturnCorrectRoute_ForKnownRoles(string roleName, string expectedRoute)
         {
             // Arrange

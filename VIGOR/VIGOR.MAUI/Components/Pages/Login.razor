@@ -9,6 +9,7 @@
 @inject IAuthStateService AuthState
 @inject AuthenticationStateProvider AuthStateProvider
 @inject IStartPageResolver StartPageResolver
+@inject IActiveShiftContextState ActiveShiftContextState
 
 <PageTitle>Log ind – VIGOR</PageTitle>
 
@@ -70,6 +71,7 @@
             var authState = await AuthStateProvider.GetAuthenticationStateAsync();
             if (authState.User.Identity?.IsAuthenticated == true)
             {
+                await ActiveShiftContextState.ClearAsync();
                 await AuthState.MarkUserAsLoggedOut();
             }
         }
@@ -90,6 +92,7 @@
             case AuthStatus.Success:
                 if (result.Role != null)
                 {
+                    await ActiveShiftContextState.ClearAsync();
                     await AuthState.MarkUserAsAuthenticated(_loginModel.Email, result.Role);
                     
                     // Brug rollen direkte fra resultatet i stedet for at læse claims igen
@@ -100,6 +103,7 @@
                 else
                 {
                     _errorMessage = "Du har ikke adgang. Kontakt administrator (mangler rolle).";
+                    await ActiveShiftContextState.ClearAsync();
                     await AuthState.MarkUserAsLoggedOut();
                 }
                 break;

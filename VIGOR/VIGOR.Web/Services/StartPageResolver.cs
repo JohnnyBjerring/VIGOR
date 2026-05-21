@@ -13,8 +13,8 @@ namespace VIGOR.Web.Services
             return role.Name switch
             {
                 "Leder" => "/admin",
-                "Vagtansvarlig" => "/schedule",
-                "Personale" => "/home",
+                "Vagtansvarlig" => "/shift/select",
+                "Personale" => "/shift/select",
                 _ => "/home"
             };
         }

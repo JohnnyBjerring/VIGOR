@@ -1,0 +1,202 @@
+<mxfile host="Electron">
+  <diagram name="Side-1" id="BaXngoJUDcSef0QyiE7I">
+    <mxGraphModel dx="1885" dy="1281" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#111827;strokeColor=#111827;fontColor=#ffffff;fontSize=22;fontStyle=1;spacing=12;" value="Aktivitetsdiagram – UC04 Registrér fast medicin" vertex="1">
+          <mxGeometry height="60" width="820" x="170" y="30" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=13;fontColor=#374151;align=center;verticalAlign=middle;whiteSpace=wrap;" value="Flow for registrering, rettelse og annullering af aktuel registrering af fast medicin" vertex="1">
+          <mxGeometry height="30" width="820" x="170" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="diagramFrame" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#111827;strokeWidth=2;arcSize=2;" value="" vertex="1">
+          <mxGeometry height="2140" width="1100" x="50" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="personaleHeader" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fef3c7;strokeColor=#92400e;fontSize=18;fontStyle=1;fontColor=#111827;align=center;verticalAlign=middle;" value="Personale" vertex="1">
+          <mxGeometry height="52" width="550" x="50" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="systemHeader" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dbeafe;strokeColor=#1e40af;fontSize=18;fontStyle=1;fontColor=#111827;align=center;verticalAlign=middle;" value="System" vertex="1">
+          <mxGeometry height="52" width="550" x="600" y="140" as="geometry" />
+        </mxCell>
+        <mxCell id="laneDivider" edge="1" parent="1" style="endArrow=none;html=1;rounded=0;dashed=1;strokeColor=#6b7280;strokeWidth=2;" value="">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="600" y="140" as="sourcePoint" />
+            <mxPoint x="600" y="2280" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="start" parent="1" style="ellipse;html=1;shape=startState;fillColor=#111827;strokeColor=#111827;" value="" vertex="1">
+          <mxGeometry height="32" width="32" x="284" y="225" as="geometry" />
+        </mxCell>
+        <mxCell id="openCitizen" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#fff2cc;strokeColor=#1f2937;fontSize=14;spacing=10;" value="Åbn borger" vertex="1">
+          <mxGeometry height="66" width="280" x="160" y="295" as="geometry" />
+        </mxCell>
+        <mxCell id="loadMedication" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#dae8fc;strokeColor=#1f2937;fontSize=14;spacing=10;" value="Hent fast medicin for borger" vertex="1">
+          <mxGeometry height="66" width="300" x="780" y="295" as="geometry" />
+        </mxCell>
+        <mxCell id="showMedication" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#dae8fc;strokeColor=#1f2937;fontSize=14;spacing=10;" value="Vis fast medicin og medicinstatus" vertex="1">
+          <mxGeometry height="66" width="300" x="780" y="425" as="geometry" />
+        </mxCell>
+        <mxCell id="chooseAction" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#fff2cc;strokeColor=#1f2937;fontSize=14;spacing=10;" value="Vælg handling for fast medicin" vertex="1">
+          <mxGeometry height="66" width="280" x="160" y="425" as="geometry" />
+        </mxCell>
+        <mxCell id="decisionAction" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fef9c3;strokeColor=#1f2937;fontSize=14;spacing=8;" value="Handling?" vertex="1">
+          <mxGeometry height="100" width="140" x="230" y="560" as="geometry" />
+        </mxCell>
+        <mxCell id="checkActive" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#dae8fc;strokeColor=#1f2937;fontSize=14;spacing=10;" value="Kontrollér om medicinplan er aktiv" vertex="1">
+          <mxGeometry height="66" width="300" x="780" y="570" as="geometry" />
+        </mxCell>
+        <mxCell id="cancelRegistration" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#fff2cc;strokeColor=#1f2937;fontSize=14;spacing=10;" value="Annullér aktuel registrering" vertex="1">
+          <mxGeometry height="66" width="280" x="160" y="725" as="geometry" />
+        </mxCell>
+        <mxCell id="clearRegistration" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#d5e8d4;strokeColor=#166534;fontSize=14;spacing=10;" value="Ryd aktuel registrering&#xa;IsGiven, GivenAt og GivenByUserId" vertex="1">
+          <mxGeometry height="76" width="320" x="690" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="showUpdatedAfterCancel" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#dae8fc;strokeColor=#1f2937;fontSize=14;spacing=10;" value="Vis opdateret medicinstatus" vertex="1">
+          <mxGeometry height="66" width="300" x="648" y="850" as="geometry" />
+        </mxCell>
+        <mxCell id="endCancel" parent="1" style="ellipse;html=1;shape=endState;fillColor=#ffffff;strokeColor=#111827;strokeWidth=2;" value="" vertex="1">
+          <mxGeometry height="36" width="36" x="780" y="994" as="geometry" />
+        </mxCell>
+        <mxCell id="decisionActive" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fef9c3;strokeColor=#1f2937;fontSize=14;spacing=8;" value="Aktiv?" vertex="1">
+          <mxGeometry height="100" width="140" x="860" y="1030" as="geometry" />
+        </mxCell>
+        <mxCell id="chooseTime" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#fff2cc;strokeColor=#1f2937;fontSize=14;spacing=10;" value="Vælg tidspunkt eller brug aktuelt tidspunkt" vertex="1">
+          <mxGeometry height="66" width="340" x="120" y="1060" as="geometry" />
+        </mxCell>
+        <mxCell id="inactiveMessage" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#f8cecc;strokeColor=#b91c1c;fontSize=14;spacing=10;" value="Vis besked: medicinplanen er inaktiv" vertex="1">
+          <mxGeometry height="66" width="320" x="760" y="1210" as="geometry" />
+        </mxCell>
+        <mxCell id="endInactive" parent="1" style="ellipse;html=1;shape=endState;fillColor=#ffffff;strokeColor=#111827;strokeWidth=2;" value="" vertex="1">
+          <mxGeometry height="36" width="36" x="902" y="1330" as="geometry" />
+        </mxCell>
+        <mxCell id="validateTime" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#dae8fc;strokeColor=#1f2937;fontSize=14;spacing=10;" value="Validér tidspunkt" vertex="1">
+          <mxGeometry height="66" width="300" x="780" y="1430" as="geometry" />
+        </mxCell>
+        <mxCell id="decisionTime" parent="1" style="rhombus;whiteSpace=wrap;html=1;fillColor=#fef9c3;strokeColor=#1f2937;fontSize=14;spacing=8;" value="Gyldigt tidspunkt?" vertex="1">
+          <mxGeometry height="100" width="150" x="855" y="1560" as="geometry" />
+        </mxCell>
+        <mxCell id="timeError" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#f8cecc;strokeColor=#b91c1c;fontSize=14;spacing=10;" value="Vis konkret fejlbesked om tidspunkt" vertex="1">
+          <mxGeometry height="66" width="320" x="620" y="1710" as="geometry" />
+        </mxCell>
+        <mxCell id="saveGiven" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#d5e8d4;strokeColor=#166534;fontSize=14;spacing=10;" value="Gem aktuel registrering med tidspunkt og brugerreference" vertex="1">
+          <mxGeometry height="76" width="370" x="760" y="1860" as="geometry" />
+        </mxCell>
+        <mxCell id="showUpdatedAfterSave" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=12;fillColor=#dae8fc;strokeColor=#1f2937;fontSize=14;spacing=10;" value="Vis opdateret medicinstatus" vertex="1">
+          <mxGeometry height="66" width="300" x="790" y="2000" as="geometry" />
+        </mxCell>
+        <mxCell id="endSuccess" parent="1" style="ellipse;html=1;shape=endState;fillColor=#ffffff;strokeColor=#111827;strokeWidth=2;" value="" vertex="1">
+          <mxGeometry height="36" width="36" x="922" y="2135" as="geometry" />
+        </mxCell>
+        <mxCell id="note" parent="1" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#f8cecc;strokeColor=#991b1b;fontSize=13;spacing=10;" value="Afgrænsning: UC04 håndterer fast medicin og aktuel registrering. PN-medicin, fuld historik og audit-log håndteres i senere use cases." vertex="1">
+          <mxGeometry height="110" width="380" x="110" y="1580" as="geometry" />
+        </mxCell>
+        <mxCell id="eStart" edge="1" parent="1" source="start" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;" target="openCitizen">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eOpenToLoad" edge="1" parent="1" source="openCitizen" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;" target="loadMedication">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eLoadToShow" edge="1" parent="1" source="loadMedication" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;" target="showMedication">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eShowToChoose" edge="1" parent="1" source="showMedication" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;" target="chooseAction">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eChooseToDecision" edge="1" parent="1" source="chooseAction" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;" target="decisionAction">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eDecisionToCheck" edge="1" parent="1" source="decisionAction" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;edgeStyle=orthogonalEdgeStyle;" target="checkActive" value="Registrér / ret">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eDecisionToCancel" edge="1" parent="1" source="decisionAction" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;edgeStyle=orthogonalEdgeStyle;" target="cancelRegistration" value="Annullér">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="300" y="690" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eCancelToClear" edge="1" parent="1" source="cancelRegistration" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;" target="clearRegistration">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eClearToUpdated" edge="1" parent="1" source="clearRegistration" style="endArrow=block;html=1;rounded=1;strokeColor=#166534;strokeWidth=2;exitX=0.118;exitY=1.008;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.273;entryY=0.064;entryDx=0;entryDy=0;entryPerimeter=0;" target="showUpdatedAfterCancel">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eCancelUpdatedToEnd" edge="1" parent="1" source="showUpdatedAfterCancel" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;" target="endCancel">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eCheckToActive" edge="1" parent="1" source="checkActive" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;" target="decisionActive">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1050" y="1080" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eActiveYes" edge="1" parent="1" source="decisionActive" style="endArrow=block;html=1;rounded=1;strokeColor=#166534;strokeWidth=2;fontSize=12;edgeStyle=orthogonalEdgeStyle;" target="chooseTime" value="Ja">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="720" y="1080" />
+              <mxPoint x="460" y="1080" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eActiveNo" edge="1" parent="1" source="decisionActive" style="endArrow=block;html=1;rounded=1;strokeColor=#b91c1c;strokeWidth=2;fontSize=12;edgeStyle=orthogonalEdgeStyle;" target="inactiveMessage" value="Nej">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="930" y="1200" />
+              <mxPoint x="930" y="1200" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eInactiveEnd" edge="1" parent="1" source="inactiveMessage" style="endArrow=block;html=1;rounded=1;strokeColor=#b91c1c;strokeWidth=2;" target="endInactive">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eChooseTimeToValidate" edge="1" parent="1" source="chooseTime" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;edgeStyle=orthogonalEdgeStyle;" target="validateTime">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="300" y="1463" />
+              <mxPoint x="780" y="1463" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eValidateToDecision" edge="1" parent="1" source="validateTime" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;" target="decisionTime">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="eTimeNo" edge="1" parent="1" source="decisionTime" style="endArrow=block;html=1;rounded=1;strokeColor=#b91c1c;strokeWidth=2;fontSize=12;edgeStyle=orthogonalEdgeStyle;" target="timeError" value="Nej">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="830" y="1610" />
+              <mxPoint x="830" y="1710" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eTimeErrorBack" edge="1" parent="1" source="timeError" style="endArrow=block;html=1;rounded=1;dashed=1;strokeColor=#6b7280;strokeWidth=2;fontSize=12;edgeStyle=orthogonalEdgeStyle;" target="chooseTime" value="Ret tidspunkt">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="560" y="1743" />
+              <mxPoint x="560" y="1160" />
+              <mxPoint x="300" y="1160" />
+              <mxPoint x="300" y="1126" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eTimeYes" edge="1" parent="1" source="decisionTime" style="endArrow=block;html=1;rounded=1;strokeColor=#166534;strokeWidth=2;fontSize=12;edgeStyle=orthogonalEdgeStyle;" target="saveGiven" value="Ja">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1080" y="1610" />
+              <mxPoint x="1080" y="1898" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eSaveToUpdated" edge="1" parent="1" source="saveGiven" style="endArrow=block;html=1;rounded=1;strokeColor=#166534;strokeWidth=2;">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="945" y="2000" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eUpdatedToEnd" edge="1" parent="1" source="showUpdatedAfterSave" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;" target="endSuccess">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

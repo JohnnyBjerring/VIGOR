@@ -1,0 +1,200 @@
+<mxfile host="Electron" agent="ChatGPT">
+  <diagram id="vigor-method-model" name="Scrum XP metode-model">
+    <mxGraphModel dx="1885" dy="1121" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#111827;fillColor=#111827;fontColor=#ffffff;fontSize=24;fontStyle=1;spacing=12;arcSize=10;" value="Scrum + XP anvendt i VIGOR" vertex="1">
+          <mxGeometry height="60" width="840" x="380" y="20" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=13;fontColor=#374151;align=center;verticalAlign=middle;whiteSpace=wrap;" value="Visuel metode-model: sådan omsættes krav til analyse, design, kode, test og levende dokumentation" vertex="1">
+          <mxGeometry height="34" width="840" x="380" y="82" as="geometry" />
+        </mxCell>
+        <mxCell id="scrumBoundary" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#d1d5db;fillColor=none;dashed=1;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="260" width="1540" x="30" y="130" as="geometry" />
+        </mxCell>
+        <mxCell id="artifactBoundary" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#d1d5db;fillColor=none;dashed=1;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="225" width="1540" x="30" y="405" as="geometry" />
+        </mxCell>
+        <mxCell id="xpBoundary" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#d1d5db;fillColor=none;dashed=1;strokeWidth=2;arcSize=8;" value="" vertex="1">
+          <mxGeometry height="220" width="1540" x="30" y="650" as="geometry" />
+        </mxCell>
+        <mxCell id="scrumLabel" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1;fontColor=#111827;align=left;verticalAlign=middle;whiteSpace=wrap;" value="Scrum-lag: styring og prioritering" vertex="1">
+          <mxGeometry height="34" width="360" x="55" y="127" as="geometry" />
+        </mxCell>
+        <mxCell id="artifactLabel" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1;fontColor=#111827;align=left;verticalAlign=middle;whiteSpace=wrap;" value="Feature-flow pr. use case" vertex="1">
+          <mxGeometry height="34" width="360" x="55" y="415" as="geometry" />
+        </mxCell>
+        <mxCell id="xpLabel" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1;fontColor=#111827;align=left;verticalAlign=middle;whiteSpace=wrap;" value="XP-lag: kvalitet i hver iteration" vertex="1">
+          <mxGeometry height="34" width="360" x="170" y="660" as="geometry" />
+        </mxCell>
+        <mxCell id="backlog" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#dae8fc;" value="Product Backlog&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;UC01-UC15 prioriteres efter værdi og risiko&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="220" x="70" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="sprintGoal" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#dae8fc;" value="Sprint / iterationsmål&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Én eller få use cases vælges&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="220" x="330" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="review" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#dae8fc;" value="Review / evaluering&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Virker den faktiske funktionalitet i praksis?&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="180" x="1130" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="retro" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#dae8fc;" value="Retrospektiv&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Hvad justeres i næste iteration?&lt;/font&gt;" vertex="1">
+          <mxGeometry height="90" width="190" x="1340" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="examplesTitle" parent="1" style="text;html=1;strokeColor=none;fillColor=none;fontSize=18;fontStyle=1;fontColor=#111827;align=left;verticalAlign=middle;whiteSpace=wrap;" value="Eksempler på gennemførte iterationer" vertex="1">
+          <mxGeometry height="32" width="360" x="600" y="129" as="geometry" />
+        </mxCell>
+        <mxCell id="uc01" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#ffffff;" value="UC01 Log ind&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Auth, roller, startside&lt;/font&gt;" vertex="1">
+          <mxGeometry height="72" width="150" x="600" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="uc02" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#ffffff;" value="UC02 Se borgere&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Afdeling + borgerliste&lt;/font&gt;" vertex="1">
+          <mxGeometry height="72" width="150" x="770" y="190" as="geometry" />
+        </mxCell>
+        <mxCell id="uc03" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#ffffff;" value="UC03 Opdatér status&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Trafiklys / risikoprofil&lt;/font&gt;" vertex="1">
+          <mxGeometry height="72" width="150" x="600" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="uc04" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#ffffff;" value="UC04 Registrér fast medicin&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Planlagt medicin + registrering&lt;/font&gt;" vertex="1">
+          <mxGeometry height="72" width="170" x="760" y="280" as="geometry" />
+        </mxCell>
+        <mxCell id="guardrails" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#f8cecc;" value="Afgrænsning og kvalitet&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Ingen stor medicinmotor i UC04.&lt;br&gt;PN-medicin, fuld audit og historik løftes i senere use cases.&lt;br&gt;Iterationen lukkes først, når den faktiske funktionalitet virker.&lt;/font&gt;" vertex="1">
+          <mxGeometry height="88" width="575" x="955" y="290" as="geometry" />
+        </mxCell>
+        <mxCell id="selectUC" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#fff2cc;" value="1. Vælg use case&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Eksempel: UC04 Registrér fast medicin&lt;/font&gt;" vertex="1">
+          <mxGeometry height="92" width="180" x="70" y="475" as="geometry" />
+        </mxCell>
+        <mxCell id="analysis" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#fff2cc;" value="2. Analyse&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Brief/Fully dressed UC&lt;br&gt;Domænebegreber&lt;br&gt;SSD&lt;/font&gt;" vertex="1">
+          <mxGeometry height="92" width="180" x="285" y="475" as="geometry" />
+        </mxCell>
+        <mxCell id="design" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#fff2cc;" value="3. Design&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;DCD&lt;br&gt;Wireframe&lt;br&gt;API/DTO/service-kontrakter&lt;/font&gt;" vertex="1">
+          <mxGeometry height="92" width="180" x="500" y="475" as="geometry" />
+        </mxCell>
+        <mxCell id="implementation" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#d5e8d4;" value="4. Implementering&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;UI → Client service → API → Service → DB&lt;/font&gt;" vertex="1">
+          <mxGeometry height="92" width="205" x="715" y="475" as="geometry" />
+        </mxCell>
+        <mxCell id="test" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#d5e8d4;" value="5. Test &amp; manuel verifikation&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Unit tests + runtime-test&lt;br&gt;Faktisk funktionalitet er afgørende&lt;/font&gt;" vertex="1">
+          <mxGeometry height="92" width="205" x="955" y="475" as="geometry" />
+        </mxCell>
+        <mxCell id="commit" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#e1d5e7;" value="6. Commit / Push&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Stabilt inkrement i GitHub&lt;/font&gt;" vertex="1">
+          <mxGeometry height="92" width="160" x="1195" y="475" as="geometry" />
+        </mxCell>
+        <mxCell id="updateArtifacts" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#e1d5e7;" value="7. Levende artefakter&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Diagrammer og rapport opdateres ved behov&lt;/font&gt;" vertex="1">
+          <mxGeometry height="92" width="160" x="1390" y="475" as="geometry" />
+        </mxCell>
+        <mxCell id="artifacts" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#9ca3af;fillColor=#f9fafb;fontColor=#374151;fontSize=12;spacing=8;arcSize=10;" value="Artefakter pr. iteration&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Use case • SSD • Domænemodel • DCD • ER • Wireframe • Tests&lt;/font&gt;" vertex="1">
+          <mxGeometry height="42" width="635" x="285" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="trace" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#9ca3af;fillColor=#f9fafb;fontColor=#374151;fontSize=12;spacing=8;arcSize=10;" value="Sporbarhed&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Krav → model → kode → test → dokumentation&lt;/font&gt;" vertex="1">
+          <mxGeometry height="42" width="400" x="955" y="590" as="geometry" />
+        </mxCell>
+        <mxCell id="xpSimple" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#ffe6cc;" value="Simpelt design / KISS&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Kun det use casen kræver&lt;/font&gt;" vertex="1">
+          <mxGeometry height="82" width="190" x="70" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="xpSmall" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#ffe6cc;" value="Små releases&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Små stabile inkrementer&lt;/font&gt;" vertex="1">
+          <mxGeometry height="82" width="180" x="290" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="xpDI" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#ffe6cc;" value="SOLID + GRASP + DI&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Lav kobling og testbarhed&lt;/font&gt;" vertex="1">
+          <mxGeometry height="82" width="205" x="500" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="xpRefactor" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#ffe6cc;" value="Refaktorering&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Design forbedres løbende&lt;/font&gt;" vertex="1">
+          <mxGeometry height="82" width="170" x="735" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="xpTests" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#ffe6cc;" value="Tests + build&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Teknisk kvalitet kontrolleres&lt;/font&gt;" vertex="1">
+          <mxGeometry height="82" width="190" x="935" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="xpStandards" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#ffe6cc;" value="Kodestandarder&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;DRY, MVC-tankegang og ens struktur&lt;/font&gt;" vertex="1">
+          <mxGeometry height="82" width="205" x="1155" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="xpFeedback" parent="1" style="rounded=1;whiteSpace=wrap;html=1;strokeColor=#1f2937;fontColor=#111827;fontSize=14;spacing=10;arcSize=12;fillColor=#ffe6cc;" value="Feedback / læring&lt;br&gt;&lt;font style=&#39;font-size:12px&#39;&gt;Fund fra faktisk brug føres tilbage til backlog&lt;/font&gt;" vertex="1">
+          <mxGeometry height="82" width="160" x="1390" y="720" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" source="backlog" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;" target="sprintGoal" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" source="sprintGoal" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;" target="selectUC" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e3" edge="1" parent="1" source="selectUC" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;" target="analysis" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" source="analysis" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;" target="design" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" source="design" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;" target="implementation" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e6" edge="1" parent="1" source="implementation" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;" target="test" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e7" edge="1" parent="1" source="test" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;" target="commit" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e8" edge="1" parent="1" source="commit" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;" target="updateArtifacts" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e9" edge="1" parent="1" source="updateArtifacts" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;" target="review" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1470" y="450" />
+              <mxPoint x="940" y="440" />
+              <mxPoint x="940" y="230" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e10" edge="1" parent="1" source="review" style="endArrow=block;html=1;rounded=1;strokeColor=#374151;strokeWidth=2;fontSize=12;" target="retro" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e11" edge="1" parent="1" source="retro" style="endArrow=block;html=1;rounded=1;dashed=1;strokeColor=#6b7280;strokeWidth=2;fontSize=12;exitX=0.467;exitY=-0.015;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" target="backlog" value="feedback til backlog">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1430" y="170" />
+              <mxPoint x="180" y="170" />
+            </Array>
+            <mxPoint x="1342.5" y="234.43999999999977" as="sourcePoint" />
+            <mxPoint x="292.5" y="234.43999999999977" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e12" edge="1" parent="1" source="artifacts" style="endArrow=block;html=1;rounded=1;dashed=1;strokeColor=#6b7280;strokeWidth=2;fontSize=12;" target="analysis" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e13" edge="1" parent="1" source="trace" style="endArrow=block;html=1;rounded=1;dashed=1;strokeColor=#6b7280;strokeWidth=2;fontSize=12;" target="test" value="">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="e14" edge="1" parent="1" source="xpSimple" style="endArrow=block;html=1;rounded=1;dashed=1;strokeColor=#6b7280;strokeWidth=2;fontSize=12;exitX=0.25;exitY=0;exitDx=0;exitDy=0;" target="analysis" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="120" y="680" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e15" edge="1" parent="1" source="xpDI" style="endArrow=block;html=1;rounded=1;dashed=1;strokeColor=#6b7280;strokeWidth=2;fontSize=12;" target="design" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="600" y="700" />
+              <mxPoint x="930" y="700" />
+              <mxPoint x="930" y="640" />
+              <mxPoint x="930" y="580" />
+              <mxPoint x="620" y="580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e16" edge="1" parent="1" source="xpTests" style="endArrow=block;html=1;rounded=1;dashed=1;strokeColor=#6b7280;strokeWidth=2;fontSize=12;" target="test" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1040" y="700" />
+              <mxPoint x="950" y="700" />
+              <mxPoint x="950" y="580" />
+              <mxPoint x="1040" y="580" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e17" edge="1" parent="1" source="xpFeedback" style="endArrow=block;html=1;rounded=1;dashed=1;strokeColor=#6b7280;strokeWidth=2;fontSize=12;entryX=1;entryY=0.5;entryDx=0;entryDy=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" target="retro" value="">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1560" y="761" />
+              <mxPoint x="1560" y="240" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

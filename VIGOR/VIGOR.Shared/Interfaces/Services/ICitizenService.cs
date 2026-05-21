@@ -8,11 +8,21 @@ namespace VIGOR.Shared.Interfaces.Services
 {
     /// <summary>
     /// Service-abstraktion for use-casen: hent borgere for en afdeling.
-    /// Placeret i Shared så både Web og klient kan afhænge af interfacet.
+    /// Placeret i Shared sÃ¥ bÃ¥de Web og klient kan afhÃ¦nge af interfacet.
     /// </summary>
     public interface ICitizenService
     {
         Task<IEnumerable<Citizen>> GetCitizensByDepartmentAsync(int departmentId, CancellationToken cancellationToken = default);
+
         Task<Citizen?> UpdateCitizenStatusAsync(int citizenId, int departmentId, CitizenStatus status, CancellationToken cancellationToken = default);
+
+        Task<Citizen?> UpdateCitizenStatusAsync(
+            int citizenId,
+            int departmentId,
+            CitizenStatus status,
+            string updatedByUserId,
+            string? userDisplayNameSnapshot = null,
+            ShiftType? shiftType = null,
+            CancellationToken cancellationToken = default);
     }
 }

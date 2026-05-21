@@ -1,0 +1,138 @@
+@page "/shift/select"
+@using VIGOR.Shared.DTOs
+@using VIGOR.Shared.Enums
+@using VIGOR.Shared.Interfaces.Services
+@inject IShiftSelectionApi ShiftSelectionApi
+@inject IActiveShiftContextState ActiveShiftContextState
+@inject NavigationManager NavigationManager
+
+<PageTitle>Vælg aktiv vagt</PageTitle>
+
+<div class="row justify-content-center">
+    <div class="col-xl-8 col-lg-10">
+        <div class="mb-4">
+            <h2 class="mb-2">Vælg aktiv vagt</h2>
+            <p class="text-muted mb-0">
+                Vælg hvilken vagttype dit arbejde vedrører. Valget gemmes som aktiv vagtkontekst i denne session,
+                så senere overlap-, note- og opgaveflows kan kobles til den rigtige vagt.
+            </p>
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(_errorMessage))
+        {
+            <div class="alert alert-danger" role="alert">
+                @_errorMessage
+            </div>
+        }
+
+        <div class="alert alert-info" role="alert">
+            Systemet foreslår <strong>@_suggestedShiftType.ToDanishDisplayName()</strong> ud fra lokalt klokkeslæt,
+            men du skal stadig bekræfte valget manuelt.
+        </div>
+
+        <div class="row g-3">
+            @foreach (var shiftType in _shiftTypes)
+            {
+                var isSuggested = shiftType == _suggestedShiftType;
+                var isSubmitting = _submittingShiftType == shiftType;
+
+                <div class="col-md-4">
+                    <button type="button"
+                            class="btn @(isSuggested ? "btn-dark" : "btn-outline-dark") w-100 h-100 p-4 text-start"
+                            disabled="@(_submittingShiftType != null)"
+                            @onclick="@(async () => await SelectShiftAsync(shiftType))">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <div>
+                                <div class="fs-4 fw-bold">@shiftType.ToDanishDisplayName()</div>
+                                <div class="small @(isSuggested ? "text-white-50" : "text-muted")">
+                                    @GetShiftDescription(shiftType)
+                                </div>
+                            </div>
+
+                            @if (isSuggested)
+                            {
+                                <span class="badge bg-light text-dark">Foreslået</span>
+                            }
+                        </div>
+
+                        @if (isSubmitting)
+                        {
+                            <div class="mt-3">
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Gemmer vagtkontekst...
+                            </div>
+                        }
+                    </button>
+                </div>
+            }
+        </div>
+
+        @if (ActiveShiftContextState.Current != null)
+        {
+            <div class="border rounded p-3 mt-4 bg-light">
+                <div class="fw-bold">Aktuel vagtkontekst</div>
+                <div>@ActiveShiftContextState.Current.DisplayName valgt @ActiveShiftContextState.Current.SelectedAtUtc.ToLocalTime().ToString("dd-MM-yyyy HH:mm")</div>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    private readonly ShiftType[] _shiftTypes =
+    {
+        ShiftType.Day,
+        ShiftType.Evening,
+        ShiftType.Night
+    };
+
+    private ShiftType _suggestedShiftType;
+    private ShiftType? _submittingShiftType;
+    private string _errorMessage = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        _suggestedShiftType = ShiftTypeExtensions.SuggestFromLocalTime(DateTime.Now.TimeOfDay);
+    }
+
+    private async Task SelectShiftAsync(ShiftType shiftType)
+    {
+        _errorMessage = string.Empty;
+        _submittingShiftType = shiftType;
+
+        try
+        {
+            var context = await ShiftSelectionApi.SelectShiftAsync(new SelectShiftRequest
+            {
+                ShiftType = shiftType
+            });
+
+            if (context == null)
+            {
+                _errorMessage = "Vagtvalget kunne ikke gemmes. Prøv igen eller log ind på ny.";
+                return;
+            }
+
+            await ActiveShiftContextState.SetAsync(context);
+            NavigationManager.NavigateTo("/citizens");
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Fejl under valg af vagt: {ex.Message}";
+        }
+        finally
+        {
+            _submittingShiftType = null;
+        }
+    }
+
+    private static string GetShiftDescription(ShiftType shiftType)
+    {
+        return shiftType switch
+        {
+            ShiftType.Day => "Typisk overlap omkring morgen/formiddag.",
+            ShiftType.Evening => "Typisk overlap omkring eftermiddag/aften.",
+            ShiftType.Night => "Typisk overlap omkring sen aften/nat.",
+            _ => string.Empty
+        };
+    }
+}
