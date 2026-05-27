@@ -53,6 +53,30 @@
         <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.3" />
         <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
         <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.16.0" />
+        <PackageReference Include="Microsoft.Maui.Controls" Version="10.0.20" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="10.0.20" />
+        <PackageReference Include="Microsoft.Maui.Essentials" Version="10.0.20" />
+    </ItemGroup>
+
+
+
+    <!-- Windows-only build: keep non-Windows platform entry points out of the active compile. -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows10.0.19041.0'">
+        <Compile Remove="Platforms\Android\**\*.cs" />
+        <Compile Remove="Platforms\iOS\**\*.cs" />
+        <Compile Remove="Platforms\MacCatalyst\**\*.cs" />
+    </ItemGroup>
+
+    <!-- Explicit MAUI usings make design-time builds stable after VS/SDK updates. -->
+    <ItemGroup>
+        <Using Include="Microsoft.Maui" />
+        <Using Include="Microsoft.Maui.Controls" />
+        <Using Include="Microsoft.Maui.Controls.Hosting" />
+        <Using Include="Microsoft.Maui.Hosting" />
+        <Using Include="Microsoft.Maui.ApplicationModel" />
+        <Using Include="Microsoft.Maui.Devices" />
+        <Using Include="Microsoft.Maui.Storage" />
+        <Using Include="Microsoft.AspNetCore.Components.WebView.Maui" />
     </ItemGroup>
 
     <ItemGroup>

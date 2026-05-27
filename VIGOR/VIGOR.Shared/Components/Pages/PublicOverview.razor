@@ -1,0 +1,103 @@
+@page "/public-overview"
+@using Microsoft.AspNetCore.Authorization
+@using VIGOR.Shared.DTOs
+@using VIGOR.Shared.Enums
+@using VIGOR.Shared.Interfaces.Services
+@attribute [AllowAnonymous]
+@inject IPublicOverviewApi PublicOverviewApi
+
+<PageTitle>Oversigt – VIGOR</PageTitle>
+
+<section class="vigor-public-screen" aria-label="Anonym oversigtsskærm">
+    <header class="vigor-public-topbar">
+        <img src="branding/VigorLogo.svg" alt="VIGOR logo" />
+        <div>
+            <h1>Oversigt</h1>
+            <p>Public view · anonymiseret statusoverblik</p>
+        </div>
+        <div class="public-clock">
+            <span>Senest opdateret</span>
+            <strong>@(_overview == null ? "--:--" : _overview.GeneratedAtUtc.ToLocalTime().ToString("HH.mm"))</strong>
+            <small>@(_overview == null ? "--.--.----" : _overview.GeneratedAtUtc.ToLocalTime().ToString("dd.MM.yyyy"))</small>
+        </div>
+    </header>
+
+    @if (_loading && _overview == null)
+    {
+        <div class="vigor-panel">Henter anonym oversigt...</div>
+    }
+    else if (_error)
+    {
+        <div class="vigor-alert danger" role="alert">@_errorMessage</div>
+    }
+    else if (_overview == null)
+    {
+        <div class="vigor-panel">Der er ingen public data at vise.</div>
+    }
+    else
+    {
+        <section class="public-main">
+            <div class="public-metrics">
+                <article class="public-metric total"><span>Samlet antal</span><strong>@_overview.TotalCitizenCount</strong><small>Anonyme borgere</small></article>
+                <article class="public-metric red"><span>Kritisk</span><strong>@_overview.RedCount</strong><small>Kræver hurtig opmærksomhed</small></article>
+                <article class="public-metric yellow"><span>Opmærksomhed</span><strong>@_overview.YellowCount</strong><small>Skal observeres</small></article>
+                <article class="public-metric green"><span>Stabil</span><strong>@_overview.GreenCount</strong><small>Normal drift</small></article>
+            </div>
+
+            <div class="public-status-board">
+                <section class="public-column red"><header><h2><i></i>Kritisk</h2><b>@_overview.RedCount</b></header><div>@foreach (var citizen in _overview.Citizens.Where(c => c.Status == CitizenStatus.Red)) { <article><h3>@citizen.DisplayLabel</h3><p>@citizen.AttentionLevel</p></article> }</div></section>
+                <section class="public-column yellow"><header><h2><i></i>Kræver opmærksomhed</h2><b>@_overview.YellowCount</b></header><div>@foreach (var citizen in _overview.Citizens.Where(c => c.Status == CitizenStatus.Yellow)) { <article><h3>@citizen.DisplayLabel</h3><p>@citizen.AttentionLevel</p></article> }</div></section>
+                <section class="public-column green"><header><h2><i></i>Stabil</h2><b>@_overview.GreenCount</b></header><div>@foreach (var citizen in _overview.Citizens.Where(c => c.Status == CitizenStatus.Green)) { <article><h3>@citizen.DisplayLabel</h3><p>@citizen.AttentionLevel</p></article> }</div></section>
+            </div>
+        </section>
+    }
+</section>
+
+@code {
+    private PublicOverviewDto? _overview;
+    private bool _loading;
+    private bool _error;
+    private string _errorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOverviewAsync();
+    }
+
+    private async Task LoadOverviewAsync()
+    {
+        _loading = true;
+        _error = false;
+        _errorMessage = string.Empty;
+
+        try
+        {
+            _overview = await PublicOverviewApi.GetPublicOverviewAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = true;
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string GetStatusBadgeClass(CitizenStatus status)
+    {
+        return status switch
+        {
+            CitizenStatus.Red => "bg-danger",
+            CitizenStatus.Yellow => "bg-warning text-dark",
+            CitizenStatus.Green => "bg-success",
+            _ => "bg-secondary"
+        };
+    }
+
+    private static string FormatDateTime(DateTime value)
+    {
+        return value.ToLocalTime().ToString("dd-MM-yyyy HH:mm");
+    }
+}

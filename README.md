@@ -1,48 +1,60 @@
 # VIGOR – Digitalt overlapsystem
 
-**VIGOR** (Visual Integrated Governance & Overlap Registry) er et digitalt overlapsystem til bostedet Slottet. Systemet skal erstatte papir-/Excel-baserede overlapsskemaer og give personalet et mere struktureret overblik over borgere, status, medicin og opgaver ved vagtskifte.
+**VIGOR** (*Visual Integrated Governance & Overlap Registry*) er et digitalt overlapsystem til bostedet Slottet. Systemet er udviklet som en afgrænset eksamensprototype, der skal vise, hvordan en Excel-baseret arbejdsgang kan erstattes af en mere struktureret, sikker og sporbar digital løsning.
 
-Projektet er udviklet som en del af 3. semester på datamatikeruddannelsen og bruges som grundlag for eksamen i Systemudvikling II, Programmering II og Teknologi II.
+GitHub-repository: <https://github.com/JohnnyBjerring/VIGOR>
+
+Projektet er udviklet som en del af 3. semester på datamatikeruddannelsen og anvendes som grundlag for eksamen i Systemudvikling II, Programmering II og Teknologi II.
 
 ---
 
 ## Formål
 
-Formålet med VIGOR er at understøtte en travl døgnbemandet hverdag, hvor personalet skal kunne overlevere vigtig information hurtigt og sikkert.
+Formålet med VIGOR er at understøtte personalets arbejde ved vagtskifte på et bosted, hvor der er behov for hurtigt overblik, korrekt medicinregistrering og sporbarhed.
 
 Systemet har fokus på:
 
 - login og rollebaseret adgang
-- overblik over borgere pr. afdeling
+- visning af borgere pr. afdeling
 - trafiklys-/risikostatus for borgere
 - registrering af fast medicin
-- tydelig opdeling mellem klient, API, service og database
-- sporbarhed i designet, så historik og audit kan udbygges senere
+- registrering af PN-medicin ved behov
+- valg af aktiv vagtkontekst
+- historik/audit-log for centrale handlinger
+- tydelig opdeling mellem UI, client service, API, server-service og database
 
 ---
 
 ## Aktuel status
 
-Følgende use cases er implementeret eller under færdiggørelse:
+Følgende use cases er implementeret i den aktuelle prototype:
 
 | Use case | Status | Bemærkning |
 |---|---|---|
 | UC01 – Log ind | Implementeret | Login via API/JWT og rollebaseret adgang |
-| UC02 – Se borgere på afdeling | Implementeret | Serveren udleder sikker afdeling ud fra login-brugeren |
+| UC02 – Se borgere på afdeling | Implementeret | Serveren udleder afdeling ud fra den indloggede bruger |
 | UC03 – Opdatér borgerstatus / risikoprofil | Implementeret | Trafiklysstatus kan opdateres via UI/API/service |
-| UC04 – Registrér fast medicin | Under færdiggørelse | Fast medicin kan registreres som givet, rettes og annulleres |
+| UC04 – Registrér fast medicin | Implementeret | Fast medicin kan registreres som givet, tidspunkt kan vælges/rettes, og registrering kan annulleres |
+| UC05 – Registrér PN-medicin | Implementeret | PN-medicin kan registreres med medicin, dosis, årsag, tidspunkt, brugerreference, afdeling og vagt |
+| UC06 – Se historik / audit-log | Implementeret | Audit-events oprettes og vises pr. borger |
+| UC07 – Vælg vagt | Implementeret | Aktiv vagt kan vælges som dagvagt, aftenvagt eller nattevagt |
 
-UC04 er bevidst afgrænset til **fast medicin og aktuel registrering**. Systemet bygger ikke en fuld medicinmotor i denne use case.
+UC08–UC15 er ikke fuldt implementeret i den aktuelle prototype og behandles som fremtidige udvidelser.
 
-Ikke en del af UC04:
+---
 
-- PN-medicin
-- fuld audit-/historikvisning
-- FMK-integration
-- avanceret frekvensmotor
-- rapportering/statistik
+## Bevidste afgrænsninger
 
-Disse områder håndteres i senere use cases.
+Den aktuelle løsning er en eksamensprototype og ikke et færdigt produktionssystem.
+
+Bevidste afgrænsninger:
+
+- Systemet er ikke et komplet fagsystem.
+- Der er ingen integration til FMK eller regionale systemer.
+- Der er ingen fuld medicinmotor eller avanceret frekvensmotor.
+- Public/anonym oversigtsskærm er ikke fuldt implementeret.
+- Noter, opgaver, personale-/telefonfordeling og statistik er fremtidige udvidelser.
+- GDPR behandles på design- og projektniveau og er ikke en juridisk driftsgodkendelse.
 
 ---
 
@@ -52,23 +64,24 @@ Løsningen er opdelt i flere projekter for at holde lav kobling og tydelige ansv
 
 | Projekt | Ansvar |
 |---|---|
-| `VIGOR.Shared` | Fælles modeller, DTO'er, interfaces, services og Blazor-komponenter |
-| `VIGOR.Web` | ASP.NET Core Web API, Identity, forretningslogik og dataadgang |
+| `VIGOR.Shared` | Fælles modeller, DTO'er, enums, interfaces, client services og Blazor-komponenter |
+| `VIGOR.Web` | ASP.NET Core Web API, Identity, server-services, dataadgang og EF Core-migrationer |
 | `VIGOR.MAUI` | .NET MAUI Blazor Hybrid-klient |
-| `VIGOR.Web.Client` | Reserveret til fremtidig kiosk-/webklient |
-| `VIGOR.UnitTests` | Unit tests for centrale services og controllere |
+| `VIGOR.Web.Client` | Reserveret til mulig fremtidig web-/kioskklient |
+| `VIGOR.UnitTests` | Unit tests for services, controllerlogik og centrale beslutningspunkter |
 
-Den primære runtime-path for UC04 er:
+Den gennemgående runtime-path er:
 
 ```text
-CitizensList.razor
-→ IFixedMedicationApi
-→ FixedMedicationClientService
-→ CitizensApiController
-→ IFixedMedicationService
-→ FixedMedicationService
-→ AppDbContext / SQLite
+UI / Blazor-komponent
+→ Client service
+→ API-controller
+→ Server-service
+→ ApplicationDbContext
+→ Database
 ```
+
+Audit-log indgår som en tværgående mekanisme i de centrale runtime-paths, hvor serveren opretter audit-events efter succesfuld validering og gemning.
 
 Arkitekturen følger projektets principper:
 
@@ -90,43 +103,9 @@ Arkitekturen følger projektets principper:
 - JWT authentication
 - Entity Framework Core
 - SQLite
-- xUnit til unit tests
-- Git/GitHub til versionsstyring
-
----
-
-## Metode
-
-Projektet følger en iterativ metode baseret på **Scrum + XP**.
-
-Scrum bruges til:
-
-- backlog og prioritering
-- valg af én eller få use cases pr. iteration
-- review og retrospektiv
-
-XP-principper bruges til:
-
-- simpelt design
-- små stabile ændringer
-- refaktorering
-- tests og build
-- ensartet kodestruktur
-- løbende feedback
-
-Hver iteration følger denne arbejdsrytme:
-
-```text
-Use case / backlog
-→ analyse
-→ design
-→ implementering
-→ test og manuel runtime-verifikation
-→ commit/push
-→ opdatering af levende artefakter
-```
-
-En iteration betragtes først som færdig, når den faktiske funktionalitet virker i runtime, og relevante diagrammer/dokumentation er opdateret ved behov.
+- xUnit
+- Moq
+- Git/GitHub
 
 ---
 
@@ -143,9 +122,9 @@ Seeddata opretter følgende testbrugere:
 
 Bemærk:
 
-- Leder og Vagtansvarlig er tilknyttet Afdeling A.
-- Personale er tilknyttet Afdeling B.
-- Afdelingsadgang håndhæves på serveren.
+- Testbrugerne er kun til udvikling og demonstration.
+- I reel drift skal hver medarbejder have sin egen konto.
+- Afdelingsadgang håndhæves på serveren og må ikke styres af klienten alene.
 
 ---
 
@@ -185,46 +164,76 @@ VIGOR.MAUI
 
 ---
 
+## Teststrategi
+
+Projektet anvender en kombination af:
+
+- service-tests
+- controller-tests
+- manuel runtime-test i MAUI-klienten
+
+De centrale use cases UC01–UC07 er testet efter projektets runtime-first Definition of Done. En use case betragtes først som lukket, når relevant kode bygger, automatiserede tests er grønne, og flowet er manuelt verificeret i den faktiske brugerflade.
+
+---
+
 ## Dokumentation
 
-Dokumentation og diagrammer ligger i:
+Dokumentation og diagrammer ligger i projektets dokumentationsmapper, eksempelvis:
 
 ```text
 Documentation/
 Documentation/Diagrammer/
 ```
 
-Vigtige dokumenter:
+Vigtige dokumenter og artefakter omfatter blandt andet:
 
-- `VIgor_Systemudviklingsmetode.pdf`
-- `VIGOR_SystemudviklingII_Scrum_XP_metodemodel_Final.drawio`
-- `VIGORv6.pdf`
+- projektrapporten
+- systemudviklingsmetode
+- use case-beskrivelser
+- ER-diagram
+- deployment-diagram
+- aktivitetsdiagrammer
+- design class diagrammer
+- API-kontrakter
 
 Diagrammer og rapport behandles som levende artefakter og opdateres løbende, når funktionalitet og design ændrer sig.
 
 ---
 
-## Kendte afgrænsninger
+## Metode
 
-Den aktuelle løsning er et eksamensprojekt og ikke et færdigt produktionssystem.
+Projektet følger en iterativ metode baseret på Scrum + XP.
 
-Bevidste afgrænsninger:
+Scrum bruges til:
 
-- UC04 gemmer aktuel medicinregistrering, men ikke fuld append-only audit endnu.
-- PN-medicin er ikke implementeret endnu.
-- Historik/audit-log er planlagt som separat use case.
-- FMK-integration er uden for nuværende scope.
-- `VIGOR.Web.Client` er reserveret til senere brug.
+- backlog og prioritering
+- valg af én eller få use cases pr. iteration
+- statusopfølgning
+- planlægning af næste leverance
 
----
+XP-principper bruges til:
 
-## Projektfokus
+- simpelt design
+- små stabile ændringer
+- refaktorering
+- tests og build
+- ensartet kodestruktur
+- løbende feedback fra runtime-test
 
-Projektets vigtigste fokus er ikke kun at levere funktionalitet, men også at vise en struktureret systemudviklingsproces med:
+Hver iteration følger denne arbejdsrytme:
 
-- tydelig use case-prioritering
-- sporbarhed fra krav til kode og test
-- lagdelt arkitektur
-- testbar kode
-- realistisk scope-afgrænsning
-- løbende dokumentation
+```text
+Krav/scope
+→ analyse
+→ design/kontrakt
+→ implementering
+→ test
+→ dokumentation
+→ status
+```
+
+Projektets vigtigste arbejdsregel er:
+
+> Koden er sandheden.
+
+Det betyder, at en funktion først beskrives som færdig, når den reelt virker i den faktiske runtime-path.

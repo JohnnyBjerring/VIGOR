@@ -14,6 +14,7 @@ namespace VIGOR.UnitTests.Navigation
         }
 
         [Theory]
+        [InlineData("Superbruger", "/admin")]
         [InlineData("Leder", "/admin")]
         [InlineData("Vagtansvarlig", "/shift/select")]
         [InlineData("Personale", "/shift/select")]

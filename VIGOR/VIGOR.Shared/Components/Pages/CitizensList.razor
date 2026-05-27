@@ -1,4 +1,4 @@
-﻿@page "/citizens"
+@page "/citizens"
 @page "/citizens/{DepartmentId:int}"
 @using System.Globalization
 @using VIGOR.Shared.Models
@@ -6,37 +6,44 @@
 @inject VIGOR.Shared.Interfaces.Services.ICitizenService CitizenService
 @inject VIGOR.Shared.Interfaces.Services.IFixedMedicationApi FixedMedicationApi
 @inject VIGOR.Shared.Interfaces.Services.IPnMedicationApi PnMedicationApi
+@inject VIGOR.Shared.Interfaces.Services.INoteApi NoteApi
+@inject VIGOR.Shared.Interfaces.Services.ICitizenTaskApi CitizenTaskApi
+@inject VIGOR.Shared.Interfaces.Services.IStaffAssignmentApi StaffAssignmentApi
 @inject VIGOR.Shared.Interfaces.Services.IAuditEventsApi AuditEventsApi
 @inject VIGOR.Shared.Interfaces.Services.IActiveShiftContextState ActiveShiftContextState
 @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager NavigationManager
 
-<PageTitle>Borgeroversigt</PageTitle>
+<PageTitle>Borgeroversigt – VIGOR</PageTitle>
 
-<div class="row align-items-center mb-4">
-    <div class="col-md-6">
-        <h2 class="mb-0">Borgeroversigt</h2>
-    </div>
-    <div class="col-md-6 text-end small">
-        <span class="me-4 pr-3">Bruger: <strong>@_userName</strong></span>
-        <span class="me-4 pr-3">Afdeling: <strong>@_departmentName</strong></span>
-        <span>Aktiv vagt: <strong>@(_activeShiftContext?.DisplayName ?? "Ingen valgt")</strong></span>
-    </div>
-</div>
-
-@if (_selectedCitizen == null)
-{
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <label for="search" class="form-label mb-1 fw-bold">Søg borger</label>
-            <div class="d-flex gap-2" style="max-width: 400px;">
-                <input type="text" id="search" class="form-control border-dark" @bind="_searchTerm" @bind:event="oninput" />
-            </div>
+<section class="vigor-page citizens-page">
+    <header class="vigor-page-hero compact">
+        <div>
+            <div class="vigor-eyebrow">Borgeroverblik</div>
+            <h1>Borgeroversigt</h1>
+            <p>Overblik i kortform. Klik på en borger for medicin, noter, historik og alle detaljer.</p>
         </div>
-    </div>
-}
+        <div class="vigor-context-pills">
+            <span class="vigor-pill">Bruger: <strong>@_userName</strong></span>
+            <span class="vigor-pill">Afdeling: <strong>@_departmentName</strong></span>
+            <span class="vigor-pill">Aktiv vagt: <strong>@(_activeShiftContext?.DisplayName ?? "Ingen valgt")</strong></span>
+        </div>
+    </header>
 
-<div class="border border-dark rounded p-0" style="min-height: 400px; background-color: #fff;">
+    @if (_selectedCitizen == null)
+    {
+        <section class="vigor-toolbar">
+            <div class="vigor-search-box">
+                <span>⌕</span>
+                <div>
+                    <label for="search">Søg borger</label>
+                    <input type="text" id="search" class="form-control" placeholder="Søg efter navn..." @bind="_searchTerm" @bind:event="oninput" />
+                </div>
+            </div>
+        </section>
+    }
+
+<div class="vigor-panel citizens-container">
     @if (_loading)
     {
         <div class="p-4"><p>Indlæser borgere...</p></div>
@@ -441,6 +448,307 @@
                 <div class="border border-dark rounded p-4 bg-white mt-4" style="max-width: 1100px;">
                     <div class="d-flex justify-content-between align-items-start mb-3 gap-3 flex-wrap">
                         <div>
+                            <h4 class="mb-1">Tildelt personale</h4>
+                            <div class="text-muted small">
+                                UC11 tildeler personale til en borger. Tildelingen gemmes med brugerreference og tidspunkt og vises også i overlap.
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(_staffAssignmentError))
+                    {
+                        <div class="alert alert-danger py-2" role="alert">@_staffAssignmentError</div>
+                    }
+
+                    <AuthorizeView Roles="Leder,Vagtansvarlig">
+                        <Authorized>
+                            <div class="border rounded p-3 bg-light mb-4">
+                                <h5 class="mb-3">Tildel personale</h5>
+                                <div class="row g-3 align-items-end">
+                                    <div class="col-md-8">
+                                        <label class="form-label fw-bold" for="staff-assignment-employee">Medarbejder</label>
+                                        <select id="staff-assignment-employee"
+                                                class="form-select form-select-sm"
+                                                @bind="_selectedStaffEmployeeId"
+                                                disabled="@(_savingStaffAssignment || _loadingStaffAssignments)">
+                                            <option value="">Vælg medarbejder fra din afdeling</option>
+                                            @if (_assignableStaff != null)
+                                            {
+                                                @foreach (var staff in _assignableStaff)
+                                                {
+                                                    <option value="@staff.EmployeeId">@FormatStaffWithPhone(staff)</option>
+                                                }
+                                            }
+                                        </select>
+                                        <div class="form-text">Kun personale fra den indloggede brugers afdeling kan tildeles.</div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button class="btn btn-outline-dark btn-sm"
+                                                @onclick="AssignStaffAsync"
+                                                disabled="@(_savingStaffAssignment || _loadingStaffAssignments)">
+                                            @if (_savingStaffAssignment)
+                                            {
+                                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                            }
+                                            Tildel personale
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </Authorized>
+                    </AuthorizeView>
+
+                    @if (_loadingStaffAssignments)
+                    {
+                        <div>Indlæser personaletildelinger...</div>
+                    }
+                    else if (_staffAssignments == null)
+                    {
+                        <div class="text-danger">Kunne ikke hente personaletildelinger.</div>
+                    }
+                    else if (!_staffAssignments.Any(a => a.IsActive))
+                    {
+                        <div>Der er endnu ikke tildelt personale til borgeren.</div>
+                    }
+                    else
+                    {
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Medarbejder</th>
+                                    <th style="width: 12rem;">Telefon</th>
+                                    <th style="width: 12rem;">Tildelt</th>
+                                    <th style="width: 12rem;">Tildelt af</th>
+                                    <AuthorizeView Roles="Leder,Vagtansvarlig">
+                                        <Authorized>
+                                            <th style="width: 9rem;">Handling</th>
+                                        </Authorized>
+                                    </AuthorizeView>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var assignment in _staffAssignments.Where(a => a.IsActive))
+                                {
+                                    var isRemoving = _unassigningStaffAssignmentId == assignment.CitizenStaffAssignmentId;
+                                    <tr>
+                                        <td>@assignment.EmployeeNameSnapshot</td>
+                                        <td>@(string.IsNullOrWhiteSpace(assignment.ActivePhoneDisplayName) ? "Ingen telefon" : assignment.ActivePhoneDisplayName)</td>
+                                        <td>@FormatStaffAssignmentDateTime(assignment.AssignedAtUtc)</td>
+                                        <td>@assignment.AssignedByUserId</td>
+                                        <AuthorizeView Roles="Leder,Vagtansvarlig">
+                                            <Authorized>
+                                                <td>
+                                                    <button class="btn btn-outline-danger btn-sm"
+                                                            @onclick="@(async () => await UnassignStaffAsync(assignment))"
+                                                            disabled="@isRemoving">
+                                                        @if (isRemoving)
+                                                        {
+                                                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                                        }
+                                                        Fjern
+                                                    </button>
+                                                </td>
+                                            </Authorized>
+                                        </AuthorizeView>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+
+
+                <div class="border border-dark rounded p-4 bg-white mt-4" style="max-width: 1100px;">
+                    <div class="d-flex justify-content-between align-items-start mb-3 gap-3 flex-wrap">
+                        <div>
+                            <h4 class="mb-1">Noter</h4>
+                            <div class="text-muted small">
+                                UC09 opretter faglige noter på den valgte borger. Noter gemmes med bruger, tidspunkt, afdeling og aktiv vagt.
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(_noteError))
+                    {
+                        <div class="alert alert-danger py-2" role="alert">@_noteError</div>
+                    }
+
+                    <div class="border rounded p-3 bg-light mb-4">
+                        <h5 class="mb-3">Opret note</h5>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label fw-bold" for="note-content">Note</label>
+                                <textarea id="note-content"
+                                          class="form-control form-control-sm"
+                                          maxlength="1000"
+                                          rows="3"
+                                          placeholder="Skriv en kort faglig note til overlap"
+                                          @bind="_noteForm.Content"
+                                          @bind:event="oninput"></textarea>
+                                <div class="form-text">Maks 1000 tegn. Aktiv vagt gemmes sammen med noten.</div>
+                            </div>
+                            <div class="col-12 d-flex align-items-center gap-3 flex-wrap">
+                                <button class="btn btn-outline-dark btn-sm"
+                                        @onclick="CreateNoteAsync"
+                                        disabled="@_savingNote">
+                                    @if (_savingNote)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    }
+                                    Gem note
+                                </button>
+                                <span class="text-muted small">Aktiv vagt: <strong>@(_activeShiftContext?.DisplayName ?? "Ingen valgt")</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (_loadingNotes)
+                    {
+                        <div>Indlæser noter...</div>
+                    }
+                    else if (_notes == null)
+                    {
+                        <div class="text-danger">Kunne ikke hente noter.</div>
+                    }
+                    else if (!_notes.Any())
+                    {
+                        <div>Der er endnu ingen noter for borgeren.</div>
+                    }
+                    else
+                    {
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10rem;">Tidspunkt</th>
+                                    <th>Note</th>
+                                    <th style="width: 12rem;">Bruger</th>
+                                    <th style="width: 10rem;">Vagt</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var note in _notes)
+                                {
+                                    <tr>
+                                        <td>@FormatNoteDateTime(note.CreatedAtUtc)</td>
+                                        <td>@note.Content</td>
+                                        <td>@FormatNoteUser(note)</td>
+                                        <td>@note.ShiftDisplayName</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+
+
+                <div class="border border-dark rounded p-4 bg-white mt-4" style="max-width: 1100px;">
+                    <div class="d-flex justify-content-between align-items-start mb-3 gap-3 flex-wrap">
+                        <div>
+                            <h4 class="mb-1">Opgaver</h4>
+                            <div class="text-muted small">
+                                UC10 opretter opgaver på den valgte borger og gør det muligt at markere dem som afsluttet.
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(_taskError))
+                    {
+                        <div class="alert alert-danger py-2" role="alert">@_taskError</div>
+                    }
+
+                    <div class="border rounded p-3 bg-light mb-4">
+                        <h5 class="mb-3">Opret opgave</h5>
+                        <div class="row g-3">
+                            <div class="col-md-5">
+                                <label class="form-label fw-bold" for="task-title">Titel</label>
+                                <input id="task-title"
+                                       type="text"
+                                       class="form-control form-control-sm"
+                                       maxlength="120"
+                                       placeholder="Fx Husk væskeskema"
+                                       @bind="_taskForm.Title"
+                                       @bind:event="oninput" />
+                            </div>
+                            <div class="col-md-7">
+                                <label class="form-label fw-bold" for="task-description">Beskrivelse</label>
+                                <textarea id="task-description"
+                                          class="form-control form-control-sm"
+                                          maxlength="1000"
+                                          rows="2"
+                                          placeholder="Valgfri kort beskrivelse af opgaven"
+                                          @bind="_taskForm.Description"
+                                          @bind:event="oninput"></textarea>
+                            </div>
+                            <div class="col-12 d-flex align-items-center gap-3 flex-wrap">
+                                <button class="btn btn-outline-dark btn-sm"
+                                        @onclick="CreateTaskAsync"
+                                        disabled="@_savingTask">
+                                    @if (_savingTask)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                    }
+                                    Gem opgave
+                                </button>
+                                <span class="text-muted small">Aktiv vagt: <strong>@(_activeShiftContext?.DisplayName ?? "Ingen valgt")</strong></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (_loadingTasks)
+                    {
+                        <div>Indlæser opgaver...</div>
+                    }
+                    else if (_tasks == null)
+                    {
+                        <div class="text-danger">Kunne ikke hente opgaver.</div>
+                    }
+                    else if (!_tasks.Any(t => !t.IsCompleted))
+                    {
+                        <div>Der er ingen aktive opgaver for borgeren.</div>
+                    }
+                    else
+                    {
+                        <table class="table table-sm align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 10rem;">Oprettet</th>
+                                    <th style="width: 14rem;">Titel</th>
+                                    <th>Beskrivelse</th>
+                                    <th style="width: 12rem;">Bruger</th>
+                                    <th style="width: 10rem;">Vagt</th>
+                                    <th style="width: 9rem;">Handling</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var task in _tasks.Where(t => !t.IsCompleted))
+                                {
+                                    <tr>
+                                        <td>@FormatTaskDateTime(task.CreatedAtUtc)</td>
+                                        <td>@task.Title</td>
+                                        <td>@(string.IsNullOrWhiteSpace(task.Description) ? "-" : task.Description)</td>
+                                        <td>@FormatTaskCreatedByUser(task)</td>
+                                        <td>@task.ShiftDisplayName</td>
+                                        <td>
+                                            <button class="btn btn-outline-success btn-sm"
+                                                    @onclick="@(async () => await CompleteTaskAsync(task))"
+                                                    disabled="@(_completingTaskId == task.CitizenTaskId)">
+                                                @if (_completingTaskId == task.CitizenTaskId)
+                                                {
+                                                    <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                                }
+                                                Afslut
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+
+                <div class="border border-dark rounded p-4 bg-white mt-4" style="max-width: 1100px;">
+                    <div class="d-flex justify-content-between align-items-start mb-3 gap-3 flex-wrap">
+                        <div>
                             <h4 class="mb-1">Historik / audit-log</h4>
                             <div class="text-muted small">
                                 UC06 viser centrale hændelser for borgeren. Audit oprettes server-side og kan ikke oprettes direkte fra klienten.
@@ -507,40 +815,40 @@
         {
             @if (_error)
             {
-                <div class="alert alert-danger m-3" role="alert">
-                    Fejl: @_errorMessage
-                </div>
+                <div class="vigor-alert danger" role="alert">Fejl: @_errorMessage</div>
             }
-            <table class="table table-borderless m-0">
-                <thead class="border-bottom border-dark">
-                    <tr>
-                        <th class="p-3 border-end border-dark">Navn</th>
-                        <th class="p-3 border-end border-dark" style="width: 15rem;">Borger-ID</th>
-                        <th class="p-3 border-end border-dark" style="width: 15rem;">Status</th>
-                        <th class="p-3" style="width: 15rem;">Handling</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var c in _filteredCitizens)
-                    {
-                        <tr class="border-bottom">
-                            <td class="p-3">@c.Name</td>
-                            <td class="p-3">@c.CitizenId</td>
-                            <td class="p-3 align-middle">
-                                <span class="badge @GetStatusBadgeClass(c.Status)">
-                                    @c.Status
-                                </span>
-                            </td>
-                            <td class="p-3 align-middle">
-                                <button class="btn btn-outline-dark btn-sm px-4" @onclick="@(async () => await OpenCitizenAsync(c))">Åbn</button>
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
+            <div class="vigor-panel-head citizens-list-head">
+                <div>
+                    <h2>Borgere på afdelingen</h2>
+                    <p>@(_searchTerm.Length == 0 ? "Viser alle borgere" : $"Søger efter: {_searchTerm}")</p>
+                </div>
+            </div>
+            <div class="citizen-card-grid">
+                @foreach (var c in _filteredCitizens)
+                {
+                    <article class="citizen-overview-card status-@c.Status.ToString().ToLowerInvariant()" role="button" tabindex="0" @onclick="@(async () => await OpenCitizenAsync(c))">
+                        <header>
+                            <div>
+                                <h3>@c.Name</h3>
+                                <p>Borger-ID: @c.CitizenId</p>
+                            </div>
+                            <span class="vigor-status-badge @GetStatusBadgeClass(c.Status)">@c.Status</span>
+                        </header>
+                        <div class="citizen-card-summary">
+                            <span>Aktuelt fokus</span>
+                            <strong>@GetCitizenOverviewFocus(c.Status)</strong>
+                        </div>
+                        <footer>
+                            <span>Detaljer åbnes på borgerkortet</span>
+                            <b>Klik for detaljer</b>
+                        </footer>
+                    </article>
+                }
+            </div>
+}
     }
 </div>
+</section>
 
 @code {
     [Parameter]
@@ -569,6 +877,27 @@
     private List<PnMedicationDto>? _pnMedications = null;
     private string _pnMedicationError = string.Empty;
     private PnMedicationFormState _pnForm = PnMedicationFormState.CreateDefault();
+
+    private bool _loadingNotes = false;
+    private bool _savingNote = false;
+    private List<NoteDto>? _notes = null;
+    private string _noteError = string.Empty;
+    private NoteFormState _noteForm = new();
+
+    private bool _loadingTasks = false;
+    private bool _savingTask = false;
+    private int? _completingTaskId = null;
+    private List<CitizenTaskDto>? _tasks = null;
+    private string _taskError = string.Empty;
+    private TaskFormState _taskForm = new();
+
+    private bool _loadingStaffAssignments = false;
+    private bool _savingStaffAssignment = false;
+    private int? _unassigningStaffAssignmentId = null;
+    private List<CitizenStaffAssignmentDto>? _staffAssignments = null;
+    private List<AssignableStaffDto>? _assignableStaff = null;
+    private string _staffAssignmentError = string.Empty;
+    private string _selectedStaffEmployeeId = string.Empty;
 
     private bool _loadingAuditEvents = false;
     private List<AuditEventDto>? _auditEvents = null;
@@ -698,6 +1027,9 @@
         _errorMessage = string.Empty;
         await LoadFixedMedicationAsync();
         await LoadPnMedicationAsync();
+        await LoadNotesAsync();
+        await LoadTasksAsync();
+        await LoadStaffAssignmentsAsync();
         await LoadAuditEventsAsync();
     }
 
@@ -710,6 +1042,18 @@
         _pnMedications = null;
         _pnMedicationError = string.Empty;
         _pnForm = PnMedicationFormState.CreateDefault();
+        _notes = null;
+        _noteError = string.Empty;
+        _noteForm = new NoteFormState();
+        _tasks = null;
+        _taskError = string.Empty;
+        _taskForm = new TaskFormState();
+        _completingTaskId = null;
+        _staffAssignments = null;
+        _assignableStaff = null;
+        _staffAssignmentError = string.Empty;
+        _selectedStaffEmployeeId = string.Empty;
+        _unassigningStaffAssignmentId = null;
         _auditEvents = null;
         _auditEventsError = string.Empty;
         _givenAtInputs.Clear();
@@ -781,6 +1125,375 @@
             _loadingPnMedication = false;
             StateHasChanged();
         }
+    }
+
+    private async Task LoadNotesAsync()
+    {
+        if (_selectedCitizen == null)
+        {
+            return;
+        }
+
+        _loadingNotes = true;
+        _noteError = string.Empty;
+
+        try
+        {
+            var notes = await NoteApi.GetNotesForCitizenAsync(_selectedCitizen.CitizenId);
+            _notes = notes?.ToList();
+        }
+        catch (Exception ex)
+        {
+            _noteError = $"Fejl under hentning af noter: {ex.Message}";
+            _notes = null;
+        }
+        finally
+        {
+            _loadingNotes = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CreateNoteAsync()
+    {
+        if (_selectedCitizen == null)
+        {
+            return;
+        }
+
+        _activeShiftContext = ActiveShiftContextState.Current;
+        if (_activeShiftContext == null)
+        {
+            _noteError = "Der er ikke valgt aktiv vagt. Vælg dagvagt, aftenvagt eller nattevagt først.";
+            NavigationManager.NavigateTo("/shift/select");
+            return;
+        }
+
+        if (!TryCreateNoteRequest(out var request, out var validationError))
+        {
+            _noteError = validationError;
+            return;
+        }
+
+        try
+        {
+            _savingNote = true;
+            _noteError = string.Empty;
+
+            var result = await NoteApi.CreateNoteAsync(_selectedCitizen.CitizenId, request);
+            if (result == null)
+            {
+                _noteError = "Kunne ikke oprette note. Serveren returnerede ikke en note.";
+                return;
+            }
+
+            _noteForm = new NoteFormState();
+            await LoadNotesAsync();
+            await LoadAuditEventsAsync();
+        }
+        catch (Exception ex)
+        {
+            _noteError = $"Fejl under oprettelse af note: {ex.Message}";
+        }
+        finally
+        {
+            _savingNote = false;
+            StateHasChanged();
+        }
+    }
+
+    private bool TryCreateNoteRequest(out CreateNoteRequest request, out string validationError)
+    {
+        request = new CreateNoteRequest();
+        validationError = string.Empty;
+
+        var content = _noteForm.Content.Trim();
+        if (string.IsNullOrWhiteSpace(content))
+        {
+            validationError = "Noten mangler. Skriv en kort faglig note.";
+            return false;
+        }
+
+        if (content.Length > 1000)
+        {
+            validationError = "Noten må højst være 1000 tegn.";
+            return false;
+        }
+
+        request = new CreateNoteRequest
+        {
+            Content = content,
+            ShiftType = _activeShiftContext!.ShiftType
+        };
+
+        return true;
+    }
+
+
+    private async Task LoadTasksAsync()
+    {
+        if (_selectedCitizen == null)
+        {
+            return;
+        }
+
+        _loadingTasks = true;
+        _taskError = string.Empty;
+
+        try
+        {
+            var tasks = await CitizenTaskApi.GetTasksForCitizenAsync(_selectedCitizen.CitizenId);
+            _tasks = tasks?.ToList();
+        }
+        catch (Exception ex)
+        {
+            _taskError = $"Fejl under hentning af opgaver: {ex.Message}";
+            _tasks = null;
+        }
+        finally
+        {
+            _loadingTasks = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CreateTaskAsync()
+    {
+        if (_selectedCitizen == null)
+        {
+            return;
+        }
+
+        _activeShiftContext = ActiveShiftContextState.Current;
+        if (_activeShiftContext == null)
+        {
+            _taskError = "Der er ikke valgt aktiv vagt. Vælg dagvagt, aftenvagt eller nattevagt først.";
+            NavigationManager.NavigateTo("/shift/select");
+            return;
+        }
+
+        if (!TryCreateTaskRequest(out var request, out var validationError))
+        {
+            _taskError = validationError;
+            return;
+        }
+
+        try
+        {
+            _savingTask = true;
+            _taskError = string.Empty;
+
+            var result = await CitizenTaskApi.CreateTaskAsync(_selectedCitizen.CitizenId, request);
+            if (result == null)
+            {
+                _taskError = "Kunne ikke oprette opgave. Serveren returnerede ikke en opgave.";
+                return;
+            }
+
+            _taskForm = new TaskFormState();
+            await LoadTasksAsync();
+            await LoadAuditEventsAsync();
+        }
+        catch (Exception ex)
+        {
+            _taskError = $"Fejl under oprettelse af opgave: {ex.Message}";
+        }
+        finally
+        {
+            _savingTask = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CompleteTaskAsync(CitizenTaskDto task)
+    {
+        if (_selectedCitizen == null)
+        {
+            return;
+        }
+
+        try
+        {
+            _completingTaskId = task.CitizenTaskId;
+            _taskError = string.Empty;
+
+            var result = await CitizenTaskApi.CompleteTaskAsync(_selectedCitizen.CitizenId, task.CitizenTaskId);
+            if (result == null)
+            {
+                _taskError = "Kunne ikke afslutte opgaven. Serveren returnerede ikke en opgave.";
+                return;
+            }
+
+            await LoadTasksAsync();
+            await LoadAuditEventsAsync();
+        }
+        catch (Exception ex)
+        {
+            _taskError = $"Fejl under afslutning af opgave: {ex.Message}";
+        }
+        finally
+        {
+            _completingTaskId = null;
+            StateHasChanged();
+        }
+    }
+
+    private bool TryCreateTaskRequest(out CreateCitizenTaskRequest request, out string validationError)
+    {
+        request = new CreateCitizenTaskRequest();
+        validationError = string.Empty;
+
+        var title = _taskForm.Title.Trim();
+        if (string.IsNullOrWhiteSpace(title))
+        {
+            validationError = "Opgavens titel mangler. Skriv en kort opgavetitel.";
+            return false;
+        }
+
+        if (title.Length > 120)
+        {
+            validationError = "Opgavens titel må højst være 120 tegn.";
+            return false;
+        }
+
+        var description = _taskForm.Description.Trim();
+        if (description.Length > 1000)
+        {
+            validationError = "Opgavens beskrivelse må højst være 1000 tegn.";
+            return false;
+        }
+
+        request = new CreateCitizenTaskRequest
+        {
+            Title = title,
+            Description = description,
+            ShiftType = _activeShiftContext!.ShiftType
+        };
+
+        return true;
+    }
+
+    private async Task LoadStaffAssignmentsAsync()
+    {
+        if (_selectedCitizen == null)
+        {
+            return;
+        }
+
+        _loadingStaffAssignments = true;
+        _staffAssignmentError = string.Empty;
+
+        try
+        {
+            var assignments = await StaffAssignmentApi.GetAssignmentsForCitizenAsync(_selectedCitizen.CitizenId);
+            _staffAssignments = assignments?.ToList();
+
+            var staff = await StaffAssignmentApi.GetAssignableStaffAsync(_selectedCitizen.CitizenId);
+            _assignableStaff = staff?.ToList();
+        }
+        catch (Exception ex)
+        {
+            _staffAssignmentError = $"Fejl under hentning af personaletildelinger: {ex.Message}";
+            _staffAssignments = null;
+            _assignableStaff = null;
+        }
+        finally
+        {
+            _loadingStaffAssignments = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task AssignStaffAsync()
+    {
+        if (_selectedCitizen == null)
+        {
+            return;
+        }
+
+        if (!TryCreateAssignStaffRequest(out var request, out var validationError))
+        {
+            _staffAssignmentError = validationError;
+            return;
+        }
+
+        try
+        {
+            _savingStaffAssignment = true;
+            _staffAssignmentError = string.Empty;
+
+            var result = await StaffAssignmentApi.AssignStaffAsync(_selectedCitizen.CitizenId, request);
+            if (result == null)
+            {
+                _staffAssignmentError = "Kunne ikke tildele personale. Serveren returnerede ikke en tildeling.";
+                return;
+            }
+
+            _selectedStaffEmployeeId = string.Empty;
+            await LoadStaffAssignmentsAsync();
+            await LoadAuditEventsAsync();
+        }
+        catch (Exception ex)
+        {
+            _staffAssignmentError = $"Fejl under tildeling af personale: {ex.Message}";
+        }
+        finally
+        {
+            _savingStaffAssignment = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task UnassignStaffAsync(CitizenStaffAssignmentDto assignment)
+    {
+        if (_selectedCitizen == null)
+        {
+            return;
+        }
+
+        try
+        {
+            _unassigningStaffAssignmentId = assignment.CitizenStaffAssignmentId;
+            _staffAssignmentError = string.Empty;
+
+            var result = await StaffAssignmentApi.UnassignStaffAsync(_selectedCitizen.CitizenId, assignment.CitizenStaffAssignmentId);
+            if (result == null)
+            {
+                _staffAssignmentError = "Kunne ikke fjerne personaletildelingen. Serveren returnerede ikke en tildeling.";
+                return;
+            }
+
+            await LoadStaffAssignmentsAsync();
+            await LoadAuditEventsAsync();
+        }
+        catch (Exception ex)
+        {
+            _staffAssignmentError = $"Fejl under fjernelse af personaletildeling: {ex.Message}";
+        }
+        finally
+        {
+            _unassigningStaffAssignmentId = null;
+            StateHasChanged();
+        }
+    }
+
+    private bool TryCreateAssignStaffRequest(out AssignStaffToCitizenRequest request, out string validationError)
+    {
+        request = new AssignStaffToCitizenRequest();
+        validationError = string.Empty;
+
+        if (!int.TryParse(_selectedStaffEmployeeId, out var employeeId) || employeeId <= 0)
+        {
+            validationError = "Vælg en medarbejder, der skal tildeles borgeren.";
+            return false;
+        }
+
+        request = new AssignStaffToCitizenRequest
+        {
+            EmployeeId = employeeId
+        };
+
+        return true;
     }
 
     private async Task LoadAuditEventsAsync()
@@ -1429,6 +2142,18 @@
         return value.ToLocalTime().ToString("dd-MM HH:mm", CultureInfo.InvariantCulture);
     }
 
+    private static string FormatStaffAssignmentDateTime(DateTime value)
+    {
+        return value.ToLocalTime().ToString("dd-MM HH:mm", CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatStaffWithPhone(AssignableStaffDto staff)
+    {
+        return string.IsNullOrWhiteSpace(staff.ActivePhoneDisplayName)
+            ? staff.Name
+            : $"{staff.Name} – {staff.ActivePhoneDisplayName}";
+    }
+
     private static string GetAuditActionLabel(string action)
     {
         return action switch
@@ -1437,6 +2162,11 @@
             "FixedMedicationGiven" => "Fast medicin givet",
             "FixedMedicationCancelled" => "Fast medicin annulleret",
             "PnMedicationRegistered" => "PN-medicin registreret",
+            "NoteCreated" => "Note oprettet",
+            "TaskCreated" => "Opgave oprettet",
+            "TaskCompleted" => "Opgave afsluttet",
+            "StaffAssignedToCitizen" => "Personale tildelt",
+            "StaffUnassignedFromCitizen" => "Personale fjernet",
             _ => string.IsNullOrWhiteSpace(action) ? "Ukendt hændelse" : action
         };
     }
@@ -1449,6 +2179,26 @@
         }
 
         return string.IsNullOrWhiteSpace(auditEvent.UserId) ? "Ukendt bruger" : auditEvent.UserId;
+    }
+
+    private static string FormatNoteDateTime(DateTime value)
+    {
+        return value.ToLocalTime().ToString("dd-MM HH:mm", CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatNoteUser(NoteDto note)
+    {
+        return string.IsNullOrWhiteSpace(note.CreatedByUserId) ? "Ukendt bruger" : note.CreatedByUserId;
+    }
+
+    private static string FormatTaskDateTime(DateTime value)
+    {
+        return value.ToLocalTime().ToString("dd-MM HH:mm", CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatTaskCreatedByUser(CitizenTaskDto task)
+    {
+        return string.IsNullOrWhiteSpace(task.CreatedByUserId) ? "Ukendt bruger" : task.CreatedByUserId;
     }
 
     private string GetStatusBadgeClass(VIGOR.Shared.Enums.CitizenStatus status) => status switch
@@ -1467,6 +2217,15 @@
         _ => "btn-secondary"
     };
 
+
+    private static string GetCitizenOverviewFocus(VIGOR.Shared.Enums.CitizenStatus status) => status switch
+    {
+        VIGOR.Shared.Enums.CitizenStatus.Red => "Kritisk opfølgning",
+        VIGOR.Shared.Enums.CitizenStatus.Yellow => "Kræver opmærksomhed",
+        VIGOR.Shared.Enums.CitizenStatus.Green => "Stabil / normal drift",
+        _ => "Ukendt status"
+    };
+
     private sealed class PnMedicationFormState
     {
         public string MedicineName { get; set; } = string.Empty;
@@ -1481,6 +2240,17 @@
                 GivenAtInput = DateTime.Now.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture)
             };
         }
+    }
+
+    private sealed class NoteFormState
+    {
+        public string Content { get; set; } = string.Empty;
+    }
+
+    private sealed class TaskFormState
+    {
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
     }
 
     private sealed class FixedMedicationEditState

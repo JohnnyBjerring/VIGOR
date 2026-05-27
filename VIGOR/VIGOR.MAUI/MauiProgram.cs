@@ -1,4 +1,12 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Components.WebView.Maui;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Maui;
+using Microsoft.Maui.ApplicationModel;
+using Microsoft.Maui.Controls;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Devices;
+using Microsoft.Maui.Hosting;
 using System;
 using System.IO;
 
@@ -49,6 +57,14 @@ public static class MauiProgram
 			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.ICitizenService, VIGOR.Shared.Services.CitizenClientService>();
 			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IFixedMedicationApi, VIGOR.Shared.Services.FixedMedicationClientService>();
 			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IPnMedicationApi, VIGOR.Shared.Services.PnMedicationClientService>();
+			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.INoteApi, VIGOR.Shared.Services.NoteClientService>();
+			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.ICitizenTaskApi, VIGOR.Shared.Services.CitizenTaskClientService>();
+			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IOverlapApi, VIGOR.Shared.Services.OverlapClientService>();
+			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IStaffAssignmentApi, VIGOR.Shared.Services.StaffAssignmentClientService>();
+			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IUserAdminApi, VIGOR.Shared.Services.UserAdminClientService>();
+			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IPublicOverviewApi, VIGOR.Shared.Services.PublicOverviewClientService>();
+			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IWorkPhoneApi, VIGOR.Shared.Services.WorkPhoneClientService>();
+			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IStatisticsApi, VIGOR.Shared.Services.StatisticsClientService>();
 			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IAuditEventsApi, VIGOR.Shared.Services.AuditEventsClientService>();
 			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IShiftSelectionApi, VIGOR.Shared.Services.ShiftSelectionClientService>();
 			builder.Services.AddScoped<VIGOR.Shared.Interfaces.Services.IActiveShiftContextState, VIGOR.Shared.Services.ActiveShiftContextState>();

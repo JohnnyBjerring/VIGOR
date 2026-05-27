@@ -1,0 +1,227 @@
+@using System.Security.Claims
+@using VIGOR.Shared.Interfaces.Services
+@inject IActiveShiftContextState ActiveShiftContextState
+@implements IDisposable
+
+<AuthorizeView Context="authContext">
+    <Authorized>
+        <section class="vigor-page vigor-home-page" aria-label="VIGOR startside">
+            <header class="vigor-page-hero">
+                <div>
+                    <div class="vigor-eyebrow">@GetEyebrow(authContext.User)</div>
+                    <h1>@GetPageTitle(authContext.User)</h1>
+                    <p>@GetIntroText(authContext.User)</p>
+                </div>
+                <div class="vigor-context-pills">
+                    <span class="vigor-pill">Vagt: <strong>@GetActiveShiftLabel()</strong></span>
+                    <span class="vigor-pill">Rolle: <strong>@GetPrimaryDisplayRole(authContext.User)</strong></span>
+                    <span class="vigor-pill">Dato: <strong>@DateTime.Now.ToString("dd.MM.yyyy")</strong></span>
+                </div>
+            </header>
+
+            @if (IsPureSystemAdministrator(authContext.User))
+            {
+                <div class="vigor-two-column">
+                    <section class="vigor-panel">
+                        <div class="vigor-panel-head">
+                            <div>
+                                <h2>Systemadministration</h2>
+                                <p>Ren Superbruger håndterer opsætning og brugeradministration uden automatisk adgang til borgerdata.</p>
+                            </div>
+                        </div>
+                        <div class="vigor-action-grid">
+                            <a class="vigor-action primary" href="admin/users"><span>⚙</span><strong>Brugere og roller</strong><small>Opret, aktivér/deaktivér og tildel roller.</small></a>
+                            <a class="vigor-action" href="work-phones"><span>☎</span><strong>Arbejdstelefoner</strong><small>Opret og vedligehold telefoner.</small></a>
+                            <a class="vigor-action" href="statistics"><span>▣</span><strong>Statistik</strong><small>Samlede tal uden persondata.</small></a>
+                            <a class="vigor-action" href="public-overview"><span>◌</span><strong>Anonym oversigt</strong><small>Kioskvisning uden personhenførbare data.</small></a>
+                        </div>
+                    </section>
+                    <aside class="vigor-panel compact-panel">
+                        <div class="vigor-panel-head"><div><h2>GDPR-afgrænsning</h2><p>Superbruger får ikke driftsadgang uden ekstra rolle.</p></div></div>
+                        <div class="vigor-info-list">
+                            <div><span class="vigor-dot status-green"></span>Teknisk administration</div>
+                            <div><span class="vigor-dot status-yellow"></span>Ingen automatisk borgeradgang</div>
+                            <div><span class="vigor-dot status-red"></span>Ingen medicin-/notevisning</div>
+                        </div>
+                    </aside>
+                </div>
+            }
+            else
+            {
+                <div class="vigor-two-column">
+                    <div class="vigor-left-stack">
+                        <section class="vigor-panel">
+                            <div class="vigor-panel-head">
+                                <div>
+                                    <h2>Vagtens overblik</h2>
+                                    <p>Kun de vigtigste nøgletal. Detaljer ligger på undersiderne.</p>
+                                </div>
+                                <div class="vigor-mini-statuses">
+                                    <span><i class="vigor-dot status-green"></i>Stabil</span>
+                                    <span><i class="vigor-dot status-yellow"></i>Opmærksomhed</span>
+                                    <span><i class="vigor-dot status-red"></i>Kritisk</span>
+                                </div>
+                            </div>
+                            <div class="vigor-metrics">
+                                <a class="vigor-metric-card important" href="shift/select"><span>Aktiv vagt</span><strong>@GetActiveShiftShortLabel()</strong><small>Vagtvalg er krævet før driftsarbejde</small></a>
+                                <a class="vigor-metric-card" href="citizens"><span>Borgere</span><strong>Overblik</strong><small>Status og nøgleinfo</small></a>
+                                <a class="vigor-metric-card" href="overlap"><span>Overlap</span><strong>Vagtskifte</strong><small>Overlevering til næste hold</small></a>
+                                @if (CanAccessStatistics(authContext.User))
+                                {
+                                    <a class="vigor-metric-card" href="statistics"><span>Statistik</span><strong>Rapporter</strong><small>Grafer og aggregerede tal</small></a>
+                                }
+                            </div>
+                        </section>
+
+                        <section class="vigor-panel">
+                            <div class="vigor-panel-head"><div><h2>Arbejdsgang</h2><p>Brug én skærm ad gangen, så dagligdagen ikke bliver overfyldt.</p></div></div>
+                            <div class="vigor-flow-grid">
+                                <a class="vigor-flow-card" href="shift/select"><strong>1. Vælg vagt</strong><span>Dag, aften eller nat gemmes som aktiv kontekst.</span></a>
+                                <a class="vigor-flow-card" href="citizens"><strong>2. Gennemgå borgere</strong><span>Åbn kun detaljer når der er behov.</span></a>
+                                <a class="vigor-flow-card" href="overlap"><strong>3. Overlever sikkert</strong><span>Overlap viser det vigtigste til næste vagthold.</span></a>
+                            </div>
+                        </section>
+                    </div>
+
+                    <aside class="vigor-right-stack">
+                        <section class="vigor-panel compact-panel">
+                            <div class="vigor-panel-head"><div><h2>Vælg vagt</h2><p>Handlinger logges med valgt vagt.</p></div></div>
+                            <div class="vigor-shift-inline">
+                                <a href="shift/select">Dag</a>
+                                <a class="active" href="shift/select">Aften</a>
+                                <a href="shift/select">Nat</a>
+                            </div>
+                        </section>
+                        <section class="vigor-panel compact-panel">
+                            <div class="vigor-panel-head"><div><h2>Hurtige opgaver</h2><p>De mest relevante handlinger.</p></div></div>
+                            <div class="vigor-action-list">
+                                @if (HasOperationalAccess(authContext.User))
+                                {
+                                    <a href="citizens">● Åbn borgere</a>
+                                    <a href="overlap">⇄ Se overlap</a>
+                                }
+                                @if (CanAccessWorkPhones(authContext.User))
+                                {
+                                    <a href="work-phones">☎ Arbejdstelefoner</a>
+                                }
+                                @if (CanAccessAdministration(authContext.User))
+                                {
+                                    <a href="admin/users">⚙ Brugere og roller</a>
+                                }
+                            </div>
+                        </section>
+                    </aside>
+                </div>
+            }
+        </section>
+    </Authorized>
+    <NotAuthorized>
+        <section class="vigor-page"><div class="vigor-panel"><h1>Du skal være logget ind</h1><p>Log ind for at få adgang til VIGOR.</p><a class="vigor-primary-button" href="login">Gå til login</a></div></section>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    protected override void OnInitialized()
+    {
+        ActiveShiftContextState.OnChange += HandleShiftChanged;
+    }
+
+    private void HandleShiftChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        ActiveShiftContextState.OnChange -= HandleShiftChanged;
+    }
+
+    private string GetActiveShiftLabel()
+    {
+        return ActiveShiftContextState.Current?.DisplayName ?? "Ingen aktiv vagt";
+    }
+
+    private string GetActiveShiftShortLabel()
+    {
+        return ActiveShiftContextState.Current?.DisplayName ?? "Vælg";
+    }
+
+    private static bool HasOperationalAccess(ClaimsPrincipal user)
+    {
+        return user.IsInRole("Leder")
+               || user.IsInRole("Vagtansvarlig")
+               || user.IsInRole("Personale");
+    }
+
+    private static bool CanAccessAdministration(ClaimsPrincipal user)
+    {
+        return user.IsInRole("Leder") || user.IsInRole("Superbruger");
+    }
+
+    private static bool CanAccessWorkPhones(ClaimsPrincipal user)
+    {
+        return user.IsInRole("Leder")
+               || user.IsInRole("Vagtansvarlig")
+               || user.IsInRole("Superbruger");
+    }
+
+    private static bool CanAccessStatistics(ClaimsPrincipal user)
+    {
+        return user.IsInRole("Leder") || user.IsInRole("Superbruger");
+    }
+
+    private static bool IsPureSystemAdministrator(ClaimsPrincipal user)
+    {
+        return user.IsInRole("Superbruger") && !HasOperationalAccess(user);
+    }
+
+    private static string GetPrimaryDisplayRole(ClaimsPrincipal user)
+    {
+        if (user.IsInRole("Superbruger") && user.IsInRole("Leder"))
+        {
+            return "Superbruger / Leder";
+        }
+
+        if (user.IsInRole("Superbruger"))
+        {
+            return "Superbruger (systemadmin)";
+        }
+
+        if (user.IsInRole("Leder"))
+        {
+            return "Leder";
+        }
+
+        if (user.IsInRole("Vagtansvarlig"))
+        {
+            return "Vagtansvarlig";
+        }
+
+        if (user.IsInRole("Personale"))
+        {
+            return "Personale";
+        }
+
+        return "Bruger";
+    }
+
+    private static string GetEyebrow(ClaimsPrincipal user)
+    {
+        return IsPureSystemAdministrator(user) ? "Systemadministration" : "Personaleoverblik";
+    }
+
+    private static string GetPageTitle(ClaimsPrincipal user)
+    {
+        return IsPureSystemAdministrator(user) ? "Administrativ startside" : "Hjem";
+    }
+
+    private static string GetIntroText(ClaimsPrincipal user)
+    {
+        if (IsPureSystemAdministrator(user))
+        {
+            return "Teknisk startside til bruger-, rolle- og systemopsætning uden automatisk adgang til borgerdata.";
+        }
+
+        return "Samlet startside for dagens vagt, borgere, medicin, opgaver og overlap.";
+    }
+}

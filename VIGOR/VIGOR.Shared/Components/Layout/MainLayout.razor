@@ -5,72 +5,88 @@
 @inject VIGOR.Shared.Interfaces.Services.IActiveShiftContextState ActiveShiftContextState
 @inject NavigationManager NavigationManager
 
-<div class="d-flex w-100" style="min-height: 100vh;">
-    <!-- Left Sidebar -->
-    <AuthorizeView Context="authContext">
-        <Authorized>
-            <nav class="bg-white border-end d-flex flex-column" style="width: 250px;">
-                <div class="p-4">
-                    <h4 class="m-0 fw-bold">Menu</h4>
+<AuthorizeView Context="authContext">
+    <Authorized>
+        <div class="vigor-shell">
+            <aside class="vigor-sidebar" aria-label="Hovedmenu">
+                <div class="vigor-sidebar-brand">
+                    <img src="branding/VigorLogo.svg" alt="VIGOR logo" />
+                    <div>
+                        <strong>VIGOR</strong>
+                        <span>Visual Integrated Governance<br />&amp; Overlap Registry</span>
+                    </div>
                 </div>
-                
-                <div class="flex-grow-1 p-3">
-                    <div class="mb-3">
-                        <NavLink class="btn btn-outline-dark w-100 text-start" href="@GetHomeLink(authContext.User)" Match="NavLinkMatch.All">Hjem</NavLink>
-                    </div>
-                    <div class="mb-3">
-                        <NavLink class="btn btn-outline-dark w-100 text-start" href="shift/select">Vælg vagt</NavLink>
-                    </div>
-                    <div class="mb-3">
-                        <NavLink class="btn btn-outline-dark w-100 text-start" href="citizens">Borgere</NavLink>
-                    </div>
 
-                    @if (ActiveShiftContextState.Current != null)
+                <div class="vigor-sidebar-divider"></div>
+                <div class="vigor-menu-label">Menu</div>
+
+                <nav class="vigor-nav">
+                    <NavLink class="vigor-nav-link" href="@GetHomeLink(authContext.User)" Match="NavLinkMatch.All">
+                        <span>⌂</span><strong>Hjem</strong>
+                    </NavLink>
+
+                    @if (HasOperationalAccess(authContext.User))
                     {
-                        <div class="border rounded p-2 mb-3 small bg-light">
-                            <div class="text-muted">Aktiv vagt</div>
-                            <div class="fw-bold">@ActiveShiftContextState.Current.DisplayName</div>
-                        </div>
+                        <NavLink class="vigor-nav-link" href="shift/select">
+                            <span>◷</span><strong>Vælg vagt</strong>
+                            @if (ActiveShiftContextState.Current == null)
+                            {
+                                <em class="nav-alert-dot">!</em>
+                            }
+                        </NavLink>
+                        <NavLink class="vigor-nav-link" href="citizens">
+                            <span>●</span><strong>Borgere</strong>
+                        </NavLink>
+                        <NavLink class="vigor-nav-link" href="overlap">
+                            <span>⇄</span><strong>Overlap</strong>
+                        </NavLink>
                     }
 
-                    <div class="mt-4 ms-2 text-muted small">
-                        Version 0.2.1.19 alpha
-                    </div>
+                    @if (CanAccessWorkPhones(authContext.User))
+                    {
+                        <NavLink class="vigor-nav-link" href="work-phones">
+                            <span>☎</span><strong>Arbejdstelefoner</strong>
+                        </NavLink>
+                    }
+
+                    @if (CanAccessStatistics(authContext.User))
+                    {
+                        <NavLink class="vigor-nav-link" href="statistics">
+                            <span>▣</span><strong>Statistik</strong>
+                        </NavLink>
+                    }
+
+                    @if (CanAccessAdministration(authContext.User))
+                    {
+                        <NavLink class="vigor-nav-link" href="admin/users">
+                            <span>⚙</span><strong>Brugere</strong>
+                        </NavLink>
+                    }
+                </nav>
+
+                <div class="vigor-sidebar-spacer"></div>
+
+                <div class="vigor-sidebar-user">
+                    <strong>@GetDisplayName(authContext.User)</strong>
+                    <span>Rolle: @GetPrimaryDisplayRole(authContext.User)</span>
+                    <span>Aktiv vagt: @(ActiveShiftContextState.Current?.DisplayName ?? "Ingen valgt")</span>
                 </div>
 
-                <div class="p-3 mt-auto">
-                    <button class="btn btn-outline-dark w-100" @onclick="Logout">Log ud</button>
-                </div>
-            </nav>
-        </Authorized>
-    </AuthorizeView>
+                <button class="vigor-logout" @onclick="Logout">Log ud</button>
+                <div class="vigor-version">Version 0.2.1.19 alpha</div>
+            </aside>
 
-    <!-- Main Content -->
-    <div class="flex-grow-1 d-flex flex-column" style="overflow-y: auto;">
-        <!-- Top Header -->
-        <AuthorizeView>
-            <Authorized>
-                <header class="p-3 border-bottom bg-white d-flex align-items-center justify-content-center" style="height: 60px;">
-                    <h3 class="m-0 fw-bold">VIGOR</h3>
-                </header>
-            </Authorized>
-        </AuthorizeView>
-
-        <!-- Content Area -->
-        <AuthorizeView>
-            <Authorized>
-                <main class="flex-grow-1 p-4 bg-white">
-                    @Body
-                </main>
-            </Authorized>
-            <NotAuthorized>
-                <main class="flex-grow-1 p-0 m-0 w-100 h-100">
-                    @Body
-                </main>
-            </NotAuthorized>
-        </AuthorizeView>
-    </div>
-</div>
+            <main class="vigor-content">
+                @Body
+            </main>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <main class="vigor-auth-content">
+            @Body
+        </main>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     protected override void OnInitialized()
@@ -88,14 +104,53 @@
         ActiveShiftContextState.OnChange -= HandleActiveShiftContextChanged;
     }
 
+    private static bool HasOperationalAccess(System.Security.Claims.ClaimsPrincipal user)
+    {
+        return user.IsInRole("Leder")
+               || user.IsInRole("Vagtansvarlig")
+               || user.IsInRole("Personale");
+    }
+
+    private static bool CanAccessAdministration(System.Security.Claims.ClaimsPrincipal user)
+    {
+        return user.IsInRole("Leder") || user.IsInRole("Superbruger");
+    }
+
+    private static bool CanAccessWorkPhones(System.Security.Claims.ClaimsPrincipal user)
+    {
+        return user.IsInRole("Leder")
+               || user.IsInRole("Vagtansvarlig")
+               || user.IsInRole("Superbruger");
+    }
+
+    private static bool CanAccessStatistics(System.Security.Claims.ClaimsPrincipal user)
+    {
+        return user.IsInRole("Leder")
+               || user.IsInRole("Superbruger");
+    }
+
     private string GetHomeLink(System.Security.Claims.ClaimsPrincipal user)
     {
-        var roleName = user.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value 
-                        ?? user.FindFirst("role")?.Value 
-                        ?? "Personale";
+        var roleName = user.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value
+                       ?? user.FindFirst("role")?.Value
+                       ?? "Personale";
 
         var role = new VIGOR.Shared.Models.Role { Name = roleName };
         return StartPageResolver.ResolveStartRoute(role);
+    }
+
+    private static string GetDisplayName(System.Security.Claims.ClaimsPrincipal user)
+    {
+        return user.Identity?.Name ?? "VIGOR bruger";
+    }
+
+    private static string GetPrimaryDisplayRole(System.Security.Claims.ClaimsPrincipal user)
+    {
+        if (user.IsInRole("Leder")) return "Leder";
+        if (user.IsInRole("Vagtansvarlig")) return "Vagtansvarlig";
+        if (user.IsInRole("Personale")) return "Personale";
+        if (user.IsInRole("Superbruger")) return "Superbruger";
+        return "Bruger";
     }
 
     private async Task Logout()

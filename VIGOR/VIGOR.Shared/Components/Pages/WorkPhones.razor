@@ -1,0 +1,294 @@
+@page "/work-phones"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@attribute [Authorize(Roles = "Leder,Vagtansvarlig,Superbruger")]
+@using VIGOR.Shared.DTOs
+@inject VIGOR.Shared.Interfaces.Services.IWorkPhoneApi WorkPhoneApi
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Arbejdstelefoner – VIGOR</PageTitle>
+
+<section class="vigor-page workphones-page">
+    <header class="vigor-page-hero compact">
+        <div><div class="vigor-eyebrow">Telefonhåndtering</div><h1>Arbejdstelefoner</h1><p>Opret telefoner og fordel dem hurtigt til medarbejdere i den aktive vagt.</p></div>
+        <div class="vigor-context-pills"><button class="vigor-secondary-button" @onclick="LoadAsync" disabled="@_isLoading">@(_isLoading ? "Indlæser..." : "Genindlæs")</button></div>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(_errorMessage)) { <div class="vigor-alert danger" role="alert">@_errorMessage</div> }
+    @if (!string.IsNullOrWhiteSpace(_successMessage)) { <div class="vigor-alert success" role="alert">@_successMessage</div> }
+    @if (IsPureSystemAdministrator) { <div class="vigor-alert info">Superbruger kan oprette telefoner, men ikke fordele dem uden driftsrolle.</div> }
+
+    <div class="vigor-two-column">
+        <div class="vigor-left-stack">
+            @if (CanAssignPhones)
+            {
+                <section class="vigor-panel">
+                    <div class="vigor-panel-head"><div><h2>Tildel telefon</h2><p>Vælg telefon og medarbejder i samme kompakte flow.</p></div></div>
+                    <div class="vigor-form-grid assign-grid">
+                        <div><label>Telefon</label><select class="form-select" @bind="_selectedWorkPhoneId" disabled="@_isSaving"><option value="">Vælg telefon</option>@foreach (var phone in _workPhones.Where(p => p.IsActive)) { <option value="@phone.WorkPhoneId">@FormatPhoneOption(phone)</option> }</select></div>
+                        <div><label>Medarbejder</label><select class="form-select" @bind="_selectedEmployeeId" disabled="@_isSaving"><option value="">Vælg medarbejder</option>@foreach (var employee in _employees) { <option value="@employee.EmployeeId">@FormatEmployeeOption(employee)</option> }</select></div>
+                        <button class="vigor-primary-button" @onclick="AssignPhoneAsync" disabled="@_isSaving">Tildel</button>
+                    </div>
+                </section>
+            }
+
+            <section class="vigor-panel">
+                <div class="vigor-panel-head"><div><h2>Aktive telefontildelinger</h2><p>Hvem har hvilken telefon lige nu.</p></div></div>
+                @if (!CanAssignPhones)
+                {
+                    <p class="text-muted">Din rolle kan ikke fordele telefoner.</p>
+                }
+                else if (_phoneAssignments.Count == 0)
+                {
+                    <p class="text-muted">Der er ingen aktive telefontildelinger.</p>
+                }
+                else
+                {
+                    <div class="vigor-card-list">
+                        @foreach (var assignment in _phoneAssignments)
+                        {
+                            <article class="vigor-list-card phone-assignment"><div><strong>@assignment.PhoneDisplayName</strong><span>@assignment.EmployeeNameSnapshot · @FormatDateTime(assignment.AssignedAtUtc)</span></div><button class="vigor-danger-button" @onclick="@(async () => await UnassignPhoneAsync(assignment))" disabled="@_isSaving">Fjern</button></article>
+                        }
+                    </div>
+                }
+            </section>
+        </div>
+
+        <aside class="vigor-right-stack">
+            @if (CanCreatePhones)
+            {
+                <section class="vigor-panel compact-panel">
+                    <div class="vigor-panel-head"><div><h2>Opret telefon</h2><p>Systemopsætning.</p></div></div>
+                    <div class="vigor-vertical-form">
+                        <div><label>Label</label><input class="form-control" placeholder="Fx Telefon 1" @bind="_newPhone.Label" /></div>
+                        <div><label>Telefonnummer</label><input class="form-control" placeholder="Fx 12 34 56 78" @bind="_newPhone.PhoneNumber" /></div>
+                        <button class="vigor-primary-button" @onclick="CreatePhoneAsync" disabled="@_isSaving">@(_isSaving ? "Gemmer..." : "Opret")</button>
+                    </div>
+                </section>
+            }
+            <section class="vigor-panel compact-panel">
+                <div class="vigor-panel-head"><div><h2>Telefoner</h2><p>Oprettede enheder.</p></div></div>
+                @if (_isLoading) { <p class="text-muted">Henter arbejdstelefoner...</p> }
+                else if (_workPhones.Count == 0) { <p class="text-muted">Der er ingen arbejdstelefoner oprettet.</p> }
+                else
+                {
+                    <div class="phone-list">
+                        @foreach (var phone in _workPhones)
+                        {
+                            <article><div><strong>@phone.DisplayName</strong><span>@(string.IsNullOrWhiteSpace(phone.AssignedEmployeeName) ? "Ikke tildelt" : phone.AssignedEmployeeName)</span></div><b class="@(phone.IsActive ? "status-ok" : "status-muted")">@(phone.IsActive ? "Aktiv" : "Inaktiv")</b></article>
+                        }
+                    </div>
+                }
+            </section>
+        </aside>
+    </div>
+</section>
+
+@code {
+    private readonly CreateWorkPhoneRequest _newPhone = new();
+    private List<WorkPhoneDto> _workPhones = new();
+    private List<PhoneAssignmentDto> _phoneAssignments = new();
+    private List<PhoneAssignableEmployeeDto> _employees = new();
+    private List<string> _currentUserRoles = new();
+    private string _selectedWorkPhoneId = string.Empty;
+    private string _selectedEmployeeId = string.Empty;
+    private bool _isLoading;
+    private bool _isSaving;
+    private string? _errorMessage;
+    private string? _successMessage;
+
+    private bool CanCreatePhones => HasRole("Leder") || HasRole("Superbruger");
+
+    private bool CanAssignPhones => HasRole("Leder") || HasRole("Vagtansvarlig");
+
+    private bool IsPureSystemAdministrator => HasRole("Superbruger") && !CanAssignPhones;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentUserAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadCurrentUserAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        _currentUserRoles = authState.User.FindAll(ClaimTypes.Role)
+            .Select(claim => claim.Value)
+            .Where(roleName => !string.IsNullOrWhiteSpace(roleName))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private bool HasRole(string roleName)
+    {
+        return _currentUserRoles.Any(role => string.Equals(role, roleName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private async Task LoadAsync()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+        _successMessage = null;
+
+        try
+        {
+            _workPhones = (await WorkPhoneApi.GetPhonesAsync()).ToList();
+
+            if (CanAssignPhones)
+            {
+                _phoneAssignments = (await WorkPhoneApi.GetActiveAssignmentsAsync()).ToList();
+                _employees = (await WorkPhoneApi.GetAssignableEmployeesAsync()).ToList();
+            }
+            else
+            {
+                _phoneAssignments = new List<PhoneAssignmentDto>();
+                _employees = new List<PhoneAssignableEmployeeDto>();
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+            _workPhones = new List<WorkPhoneDto>();
+            _phoneAssignments = new List<PhoneAssignmentDto>();
+            _employees = new List<PhoneAssignableEmployeeDto>();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task CreatePhoneAsync()
+    {
+        if (!CanCreatePhones)
+        {
+            _errorMessage = "Du har ikke adgang til at oprette arbejdstelefoner.";
+            return;
+        }
+
+        _isSaving = true;
+        _errorMessage = null;
+        _successMessage = null;
+
+        try
+        {
+            await WorkPhoneApi.CreatePhoneAsync(_newPhone);
+            _newPhone.Label = string.Empty;
+            _newPhone.PhoneNumber = string.Empty;
+            _successMessage = "Arbejdstelefonen blev oprettet.";
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task AssignPhoneAsync()
+    {
+        if (!CanAssignPhones)
+        {
+            _errorMessage = "Du har ikke adgang til at tildele arbejdstelefoner.";
+            return;
+        }
+
+        _errorMessage = null;
+        _successMessage = null;
+
+        if (!int.TryParse(_selectedWorkPhoneId, out var workPhoneId) || workPhoneId <= 0)
+        {
+            _errorMessage = "Vælg en telefon.";
+            return;
+        }
+
+        if (!int.TryParse(_selectedEmployeeId, out var employeeId) || employeeId <= 0)
+        {
+            _errorMessage = "Vælg en medarbejder.";
+            return;
+        }
+
+        _isSaving = true;
+
+        try
+        {
+            await WorkPhoneApi.AssignPhoneAsync(new AssignWorkPhoneRequest
+            {
+                WorkPhoneId = workPhoneId,
+                EmployeeId = employeeId
+            });
+
+            _selectedWorkPhoneId = string.Empty;
+            _selectedEmployeeId = string.Empty;
+            _successMessage = "Telefonen blev tildelt medarbejderen.";
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task UnassignPhoneAsync(PhoneAssignmentDto assignment)
+    {
+        if (!CanAssignPhones)
+        {
+            _errorMessage = "Du har ikke adgang til at fjerne telefontildelinger.";
+            return;
+        }
+
+        _errorMessage = null;
+        _successMessage = null;
+        _isSaving = true;
+
+        try
+        {
+            await WorkPhoneApi.UnassignPhoneAsync(assignment.PhoneAssignmentId);
+            _successMessage = "Telefonen blev fjernet fra medarbejderen.";
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private static string FormatPhoneOption(WorkPhoneDto phone)
+    {
+        var assignmentText = phone.IsAssigned && !string.IsNullOrWhiteSpace(phone.AssignedEmployeeName)
+            ? $" – tildelt {phone.AssignedEmployeeName}"
+            : string.Empty;
+
+        return $"{phone.DisplayName}{assignmentText}";
+    }
+
+    private static string FormatEmployeeOption(PhoneAssignableEmployeeDto employee)
+    {
+        var departmentText = string.IsNullOrWhiteSpace(employee.DepartmentName)
+            ? "Ingen afdeling"
+            : employee.DepartmentName;
+
+        var phoneText = string.IsNullOrWhiteSpace(employee.ActivePhoneDisplayName)
+            ? "ingen telefon"
+            : employee.ActivePhoneDisplayName;
+
+        return $"{employee.Name} · {departmentText} · {phoneText}";
+    }
+
+    private static string FormatDateTime(DateTime value)
+    {
+        return value.ToLocalTime().ToString("dd-MM HH:mm");
+    }
+}

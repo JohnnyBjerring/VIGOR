@@ -57,7 +57,7 @@ static async Task SeedDataAsync(IServiceProvider serviceProvider)
     var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
 
     // Opret roller
-    string[] roleNames = ["Leder", "Vagtansvarlig", "Personale"];
+    string[] roleNames = ["Leder", "Vagtansvarlig", "Personale", "Superbruger"];
     foreach (var roleName in roleNames)
     {
         if (!await roleManager.RoleExistsAsync(roleName))

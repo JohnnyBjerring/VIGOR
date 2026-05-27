@@ -1,0 +1,305 @@
+@page "/overlap"
+@using System.Globalization
+@using VIGOR.Shared.DTOs
+@using VIGOR.Shared.Enums
+@inject VIGOR.Shared.Interfaces.Services.IOverlapApi OverlapApi
+@inject VIGOR.Shared.Interfaces.Services.IActiveShiftContextState ActiveShiftContextState
+@implements IDisposable
+
+<PageTitle>Overlap – VIGOR</PageTitle>
+
+<section class="vigor-page overlap-page overlap-focus-page">
+    <header class="vigor-page-hero compact">
+        <div>
+            <div class="vigor-eyebrow">Vagtskifte</div>
+            <h1>Overlap</h1>
+            <p>Kun aktive overleveringspunkter vises åbent. Tomme felter skjules, og historik ligger foldet sammen.</p>
+        </div>
+        <div class="vigor-context-pills">
+            <span class="vigor-pill">Aktiv vagt: <strong>@(_overlap?.ActiveShiftDisplayName ?? _activeShiftName ?? "Ingen valgt")</strong></span>
+            @if (_overlap != null)
+            {
+                <span class="vigor-pill">Afdeling: <strong>@_overlap.DepartmentName</strong></span>
+                <span class="vigor-pill">Opdateret: <strong>@FormatDateTime(_overlap.GeneratedAtUtc)</strong></span>
+            }
+            <button class="vigor-secondary-button" @onclick="LoadOverlapAsync" disabled="@_loading">@(_loading ? "Opdaterer..." : "Opdatér")</button>
+        </div>
+    </header>
+
+    @if (ActiveShiftContextState.Current == null)
+    {
+        <div class="vigor-alert warning">Der er ikke valgt aktiv vagt. Vælg helst vagt først, så konteksten bliver tydelig.</div>
+    }
+    @if (_error)
+    {
+        <div class="vigor-alert danger" role="alert">@_errorMessage</div>
+    }
+
+    @if (_loading && _overlap == null)
+    {
+        <div class="vigor-panel">Indlæser overlap...</div>
+    }
+    else if (_overlap == null)
+    {
+        <div class="vigor-panel">Der er endnu ikke hentet overlapdata.</div>
+    }
+    else if (!_overlap.Citizens.Any())
+    {
+        <div class="vigor-panel">Der er ingen borgere i din afdeling.</div>
+    }
+    else
+    {
+        <section class="overlap-summary-panel">
+            <article>
+                <span>Borgere</span>
+                <strong>@_overlap.Citizens.Count()</strong>
+            </article>
+            <article class="warning">
+                <span>Medicin mangler</span>
+                <strong>@_overlap.Citizens.Sum(c => c.FixedMedications.Count(m => !m.IsGiven))</strong>
+            </article>
+            <article class="warning">
+                <span>Åbne opgaver</span>
+                <strong>@_overlap.Citizens.Sum(c => c.OpenTasks.Count())</strong>
+            </article>
+            <article>
+                <span>Noter</span>
+                <strong>@_overlap.Citizens.Sum(c => c.ActiveNotes.Count())</strong>
+            </article>
+        </section>
+
+        <section class="overlap-focus-list">
+            @foreach (var citizen in _overlap.Citizens.OrderBy(GetStatusPriority).ThenBy(c => c.Name))
+            {
+                var missingFixedMedications = citizen.FixedMedications.Where(m => !m.IsGiven).Take(4).ToList();
+                var givenFixedMedicationCount = citizen.FixedMedications.Count(m => m.IsGiven);
+                var pnMedications = citizen.RecentPnMedications.Take(3).ToList();
+                var openTasks = citizen.OpenTasks.Take(4).ToList();
+                var activeNotes = citizen.ActiveNotes.Take(3).ToList();
+                var auditEvents = citizen.RecentAuditEvents.Take(4).ToList();
+                var hasOpenContent = missingFixedMedications.Any() || pnMedications.Any() || openTasks.Any() || activeNotes.Any();
+
+                <article class="overlap-focus-card status-@citizen.Status.ToString().ToLowerInvariant() @(hasOpenContent ? "has-content" : "is-quiet")">
+                    <header class="overlap-focus-head">
+                        <div>
+                            <h2>@citizen.Name</h2>
+                            <p>Borger-ID: @citizen.CitizenId · Personale: @(citizen.ActiveStaffAssignments.Any() ? GetAssignedStaffNames(citizen) : "Ingen aktiv tildeling")</p>
+                        </div>
+                        <span class="vigor-status-badge @GetStatusBadgeClass(citizen.Status)">@citizen.StatusDisplayName</span>
+                    </header>
+
+                    <div class="overlap-signal-row" aria-label="Overblik for @citizen.Name">
+                        @if (missingFixedMedications.Any())
+                        {
+                            <span class="signal danger">@missingFixedMedications.Count medicin mangler</span>
+                        }
+                        else if (givenFixedMedicationCount > 0)
+                        {
+                            <span class="signal ok">@givenFixedMedicationCount medicin givet</span>
+                        }
+
+                        @if (pnMedications.Any())
+                        {
+                            <span class="signal info">@pnMedications.Count PN</span>
+                        }
+
+                        @if (openTasks.Any())
+                        {
+                            <span class="signal warning">@openTasks.Count åbne opgaver</span>
+                        }
+
+                        @if (activeNotes.Any())
+                        {
+                            <span class="signal info">@activeNotes.Count noter</span>
+                        }
+
+                        @if (!hasOpenContent && !missingFixedMedications.Any())
+                        {
+                            <span class="signal quiet">Ingen aktive overleveringspunkter</span>
+                        }
+                    </div>
+
+                    @if (hasOpenContent)
+                    {
+                        <div class="overlap-active-grid">
+                            @if (missingFixedMedications.Any())
+                            {
+                                <section class="overlap-focus-section important">
+                                    <h3>Medicin der mangler</h3>
+                                    @foreach (var medication in missingFixedMedications)
+                                    {
+                                        <div class="overlap-compact-line">
+                                            <strong>@medication.Name</strong>
+                                            <span>@FormatPlannedTime(medication.PlannedAt)</span>
+                                        </div>
+                                    }
+                                </section>
+                            }
+
+                            @if (openTasks.Any())
+                            {
+                                <section class="overlap-focus-section important">
+                                    <h3>Åbne opgaver</h3>
+                                    @foreach (var task in openTasks)
+                                    {
+                                        <div class="overlap-compact-line">
+                                            <strong>@task.Title</strong>
+                                            <span>@FormatDateTime(task.CreatedAtUtc) · @task.ShiftDisplayName</span>
+                                        </div>
+                                    }
+                                </section>
+                            }
+
+                            @if (pnMedications.Any())
+                            {
+                                <section class="overlap-focus-section">
+                                    <h3>PN siden sidste overlap</h3>
+                                    @foreach (var pn in pnMedications)
+                                    {
+                                        <div class="overlap-compact-line">
+                                            <strong>@pn.MedicineName</strong>
+                                            <span>@pn.Dose · @FormatDateTime(pn.GivenAtUtc)</span>
+                                        </div>
+                                    }
+                                </section>
+                            }
+
+                            @if (activeNotes.Any())
+                            {
+                                <section class="overlap-focus-section notes">
+                                    <h3>Aktive noter</h3>
+                                    @foreach (var note in activeNotes)
+                                    {
+                                        <div class="overlap-note-compact">
+                                            @note.Content
+                                            <span>@FormatDateTime(note.CreatedAtUtc) · @note.ShiftDisplayName</span>
+                                        </div>
+                                    }
+                                </section>
+                            }
+                        </div>
+                    }
+
+                    @if (auditEvents.Any())
+                    {
+                        <details class="overlap-history-details">
+                            <summary>Seneste historik (@auditEvents.Count)</summary>
+                            <div class="overlap-history-list">
+                                @foreach (var audit in auditEvents)
+                                {
+                                    <div class="overlap-compact-line">
+                                        <strong>@GetAuditActionLabel(audit.Action)</strong>
+                                        <span>@audit.Description · @FormatDateTime(audit.CreatedAtUtc)</span>
+                                    </div>
+                                }
+                            </div>
+                        </details>
+                    }
+                </article>
+            }
+        </section>
+    }
+</section>
+
+@code {
+    private OverlapDto? _overlap;
+    private bool _loading;
+    private bool _error;
+    private string _errorMessage = string.Empty;
+    private string? _activeShiftName;
+
+    protected override async Task OnInitializedAsync()
+    {
+        ActiveShiftContextState.OnChange += HandleActiveShiftChanged;
+        await LoadOverlapAsync();
+    }
+
+    public void Dispose()
+    {
+        ActiveShiftContextState.OnChange -= HandleActiveShiftChanged;
+    }
+
+    private async void HandleActiveShiftChanged()
+    {
+        await InvokeAsync(async () => await LoadOverlapAsync());
+    }
+
+    private async Task LoadOverlapAsync()
+    {
+        _loading = true;
+        _error = false;
+        _errorMessage = string.Empty;
+        _activeShiftName = ActiveShiftContextState.Current?.DisplayName;
+
+        try
+        {
+            _overlap = await OverlapApi.GetOverlapAsync(ActiveShiftContextState.Current?.ShiftType);
+        }
+        catch (Exception ex)
+        {
+            _error = true;
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string FormatDateTime(DateTime value)
+    {
+        return value.ToLocalTime().ToString("dd-MM HH:mm", CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatPlannedTime(DateTime value)
+    {
+        return value.ToString("HH:mm", CultureInfo.InvariantCulture);
+    }
+
+    private static string GetAssignedStaffNames(CitizenOverlapDto citizen)
+    {
+        return string.Join(", ", citizen.ActiveStaffAssignments.Select(a =>
+            string.IsNullOrWhiteSpace(a.ActivePhoneDisplayName)
+                ? a.EmployeeNameSnapshot
+                : $"{a.EmployeeNameSnapshot} – {a.ActivePhoneDisplayName}"));
+    }
+
+    private static int GetStatusPriority(CitizenOverlapDto citizen)
+    {
+        return citizen.Status switch
+        {
+            CitizenStatus.Red => 0,
+            CitizenStatus.Yellow => 1,
+            CitizenStatus.Green => 2,
+            _ => 3
+        };
+    }
+
+    private static string GetAuditActionLabel(string action)
+    {
+        return action switch
+        {
+            "CitizenStatusUpdated" => "Status ændret",
+            "FixedMedicationGiven" => "Fast medicin givet",
+            "FixedMedicationCancelled" => "Fast medicin annulleret",
+            "PnMedicationRegistered" => "PN-medicin registreret",
+            "NoteCreated" => "Note oprettet",
+            "TaskCreated" => "Opgave oprettet",
+            "TaskCompleted" => "Opgave afsluttet",
+            "StaffAssignedToCitizen" => "Personale tildelt",
+            "StaffUnassignedFromCitizen" => "Personale fjernet",
+            _ => string.IsNullOrWhiteSpace(action) ? "Ukendt hændelse" : action
+        };
+    }
+
+    private static string GetStatusBadgeClass(CitizenStatus status)
+    {
+        return status switch
+        {
+            CitizenStatus.Red => "bg-danger text-white px-3 py-2 fs-6",
+            CitizenStatus.Yellow => "bg-warning text-dark px-3 py-2 fs-6",
+            CitizenStatus.Green => "bg-success text-white px-3 py-2 fs-6",
+            _ => "bg-secondary text-white px-3 py-2 fs-6"
+        };
+    }
+}

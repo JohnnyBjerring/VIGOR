@@ -22,6 +22,14 @@ namespace VIGOR.Web.Client.Extensions
             services.AddScoped<ICitizenService, CitizenClientService>();
             services.AddScoped<IFixedMedicationApi, FixedMedicationClientService>();
             services.AddScoped<IPnMedicationApi, PnMedicationClientService>();
+            services.AddScoped<INoteApi, NoteClientService>();
+            services.AddScoped<ICitizenTaskApi, CitizenTaskClientService>();
+            services.AddScoped<IOverlapApi, OverlapClientService>();
+            services.AddScoped<IStaffAssignmentApi, StaffAssignmentClientService>();
+            services.AddScoped<IUserAdminApi, UserAdminClientService>();
+            services.AddScoped<IPublicOverviewApi, PublicOverviewClientService>();
+            services.AddScoped<IWorkPhoneApi, WorkPhoneClientService>();
+            services.AddScoped<IStatisticsApi, StatisticsClientService>();
             services.AddScoped<IAuditEventsApi, AuditEventsClientService>();
             services.AddScoped<IShiftSelectionApi, ShiftSelectionClientService>();
             services.AddScoped<IActiveShiftContextState, ActiveShiftContextState>();

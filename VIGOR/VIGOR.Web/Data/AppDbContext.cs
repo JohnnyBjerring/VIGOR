@@ -17,6 +17,11 @@ namespace VIGOR.Web.Data
         public DbSet<Department> Departments => Set<Department>();
         public DbSet<FixedMedication> FixedMedications => Set<FixedMedication>();
         public DbSet<PnMedication> PnMedications => Set<PnMedication>();
+        public DbSet<Note> Notes => Set<Note>();
+        public DbSet<CitizenTask> CitizenTasks => Set<CitizenTask>();
+        public DbSet<CitizenStaffAssignment> CitizenStaffAssignments => Set<CitizenStaffAssignment>();
+        public DbSet<WorkPhone> WorkPhones => Set<WorkPhone>();
+        public DbSet<PhoneAssignment> PhoneAssignments => Set<PhoneAssignment>();
         public DbSet<AuditEvent> AuditEvents => Set<AuditEvent>();
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -91,6 +96,162 @@ namespace VIGOR.Web.Data
                     .HasForeignKey(e => e.CitizenId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
+
+
+            builder.Entity<Note>(entity =>
+            {
+                entity.HasKey(n => n.NoteId);
+
+                entity.Property(n => n.Content)
+                    .IsRequired()
+                    .HasMaxLength(1000);
+
+                entity.Property(n => n.CreatedByUserId)
+                    .IsRequired()
+                    .HasMaxLength(450);
+
+                entity.HasIndex(n => new { n.CitizenId, n.CreatedAtUtc });
+                entity.HasIndex(n => new { n.DepartmentId, n.CreatedAtUtc });
+
+                // FK uden navigationer (undgår at ændre Citizen response-shape)
+                entity.HasOne<Citizen>()
+                    .WithMany()
+                    .HasForeignKey(n => n.CitizenId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+
+
+            builder.Entity<CitizenTask>(entity =>
+            {
+                entity.HasKey(t => t.CitizenTaskId);
+
+                entity.Property(t => t.Title)
+                    .IsRequired()
+                    .HasMaxLength(120);
+
+                entity.Property(t => t.Description)
+                    .IsRequired()
+                    .HasMaxLength(1000);
+
+                entity.Property(t => t.CreatedByUserId)
+                    .IsRequired()
+                    .HasMaxLength(450);
+
+                entity.Property(t => t.CompletedByUserId)
+                    .HasMaxLength(450);
+
+                entity.Property(t => t.IsCompleted)
+                    .HasDefaultValue(false);
+
+                entity.HasIndex(t => new { t.CitizenId, t.IsCompleted, t.CreatedAtUtc });
+                entity.HasIndex(t => new { t.DepartmentId, t.IsCompleted, t.CreatedAtUtc });
+
+                // FK uden navigationer (undgår at ændre Citizen response-shape)
+                entity.HasOne<Citizen>()
+                    .WithMany()
+                    .HasForeignKey(t => t.CitizenId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+
+
+            builder.Entity<CitizenStaffAssignment>(entity =>
+            {
+                entity.HasKey(a => a.CitizenStaffAssignmentId);
+
+                entity.Property(a => a.EmployeeNameSnapshot)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(a => a.AssignedByUserId)
+                    .IsRequired()
+                    .HasMaxLength(450);
+
+                entity.Property(a => a.UnassignedByUserId)
+                    .HasMaxLength(450);
+
+                entity.Property(a => a.IsActive)
+                    .HasDefaultValue(true);
+
+                entity.HasIndex(a => new { a.CitizenId, a.IsActive, a.AssignedAtUtc });
+                entity.HasIndex(a => new { a.DepartmentId, a.IsActive, a.AssignedAtUtc });
+                entity.HasIndex(a => new { a.EmployeeId, a.IsActive });
+
+                // FK uden navigationer (undgår at ændre Citizen response-shape)
+                entity.HasOne<Citizen>()
+                    .WithMany()
+                    .HasForeignKey(a => a.CitizenId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                // Employee slettes ikke gennem tildelingshistorik. Tildeling gemmer derfor også et name snapshot.
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(a => a.EmployeeId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+
+            builder.Entity<WorkPhone>(entity =>
+            {
+                entity.HasKey(p => p.WorkPhoneId);
+
+                entity.Property(p => p.Label)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(p => p.PhoneNumber)
+                    .IsRequired()
+                    .HasMaxLength(40);
+
+                entity.Property(p => p.IsActive)
+                    .HasDefaultValue(true);
+
+                entity.HasIndex(p => p.PhoneNumber)
+                    .IsUnique();
+            });
+
+            builder.Entity<PhoneAssignment>(entity =>
+            {
+                entity.HasKey(a => a.PhoneAssignmentId);
+
+                entity.Property(a => a.EmployeeNameSnapshot)
+                    .IsRequired()
+                    .HasMaxLength(200);
+
+                entity.Property(a => a.PhoneLabelSnapshot)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(a => a.PhoneNumberSnapshot)
+                    .IsRequired()
+                    .HasMaxLength(40);
+
+                entity.Property(a => a.AssignedByUserId)
+                    .IsRequired()
+                    .HasMaxLength(450);
+
+                entity.Property(a => a.UnassignedByUserId)
+                    .HasMaxLength(450);
+
+                entity.Property(a => a.IsActive)
+                    .HasDefaultValue(true);
+
+                entity.HasIndex(a => new { a.WorkPhoneId, a.IsActive });
+                entity.HasIndex(a => new { a.EmployeeId, a.IsActive });
+                entity.HasIndex(a => new { a.DepartmentId, a.IsActive, a.AssignedAtUtc });
+
+                entity.HasOne<WorkPhone>()
+                    .WithMany()
+                    .HasForeignKey(a => a.WorkPhoneId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne<Employee>()
+                    .WithMany()
+                    .HasForeignKey(a => a.EmployeeId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
 
             builder.Entity<PnMedication>(entity =>
             {

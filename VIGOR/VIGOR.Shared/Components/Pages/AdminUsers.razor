@@ -1,0 +1,400 @@
+@page "/admin/users"
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.JSInterop
+@using System.Security.Claims
+@attribute [Authorize(Roles = "Leder,Superbruger")]
+@using VIGOR.Shared.DTOs
+@inject VIGOR.Shared.Interfaces.Services.IUserAdminApi UserAdminApi
+@inject AuthenticationStateProvider AuthStateProvider
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Brugere – VIGOR</PageTitle>
+
+<section class="vigor-page users-page">
+    <header class="vigor-page-hero compact">
+        <div><div class="vigor-eyebrow">Administration</div><h1>Brugere</h1><p>Opret brugere, tildel roller og hold overblik over afdeling, telefon og status.</p></div>
+        <div class="vigor-context-pills"><button class="vigor-secondary-button" @onclick="LoadAsync" disabled="@_isLoading">@(_isLoading ? "Indlæser..." : "Genindlæs")</button></div>
+    </header>
+
+    @if (!string.IsNullOrWhiteSpace(_errorMessage)) { <div class="vigor-alert danger" role="alert">@_errorMessage</div> }
+    @if (!string.IsNullOrWhiteSpace(_successMessage)) { <div class="vigor-alert success" role="alert">@_successMessage</div> }
+
+    <div class="vigor-two-column users-grid">
+        <section class="vigor-panel">
+            <div class="vigor-panel-head"><div><h2>Brugere i systemet</h2><p>Rolle og status kan ændres direkte på kortet.</p></div></div>
+            @if (_isLoading)
+            {
+                <p class="text-muted">Henter brugere...</p>
+            }
+            else if (_users.Count == 0)
+            {
+                <div class="vigor-alert info">Der er ingen brugere at vise.</div>
+            }
+            else
+            {
+                <div class="user-card-grid">
+                    @foreach (var user in _users)
+                    {
+                        <article class="user-admin-card @(user.IsActive ? "active" : "inactive")">
+                            <header>
+                                <div><h3>@(string.IsNullOrWhiteSpace(user.DisplayName) ? user.Email : user.DisplayName)</h3><p>@user.Email</p><small>@ShortUserId(user.UserId)</small></div>
+                                <span class="@(user.IsActive ? "status-ok" : "status-muted")">@(user.IsActive ? "Aktiv" : "Deaktiveret")</span>
+                            </header>
+                            <div class="user-admin-meta"><span>Afdeling<strong>@(string.IsNullOrWhiteSpace(user.DepartmentName) ? "Ingen afdeling" : user.DepartmentName)</strong></span><span>Telefon<strong>@(string.IsNullOrWhiteSpace(user.ActivePhoneDisplayName) ? "Ingen telefon" : user.ActivePhoneDisplayName)</strong></span></div>
+                            <div class="user-admin-actions">
+                                <select class="form-select form-select-sm" value="@user.PrimaryRole" @onchange="async e => await UpdateRoleAsync(user, e.Value?.ToString())" disabled="@(_isSaving || !CanChangeRole(user))" title="@GetRoleSelectTitle(user)"><option value="">Ingen rolle</option>@foreach (var role in GetRoleOptionsForUser(user)) { <option value="@role.Name">@FormatRoleOption(role.Name)</option> }</select>
+                                <button class="@(user.IsActive ? "vigor-danger-button" : "vigor-primary-button")" @onclick="async () => await ToggleActiveAsync(user)" disabled="@(_isSaving || !CanChangeActiveState(user))" title="@GetActiveButtonTitle(user)">@(IsCurrentUser(user) ? "Egen bruger" : IsHigherRoleThanCurrent(user) ? "Højere rolle" : user.IsActive ? "Deaktivér" : "Aktivér")</button>
+                            </div>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
+
+        <aside class="vigor-right-stack">
+            <section class="vigor-panel compact-panel">
+                <div class="vigor-panel-head"><div><h2>Opret bruger</h2><p>Udfyld kun nødvendige oplysninger.</p></div></div>
+                <div class="vigor-vertical-form">
+                    <div><label>Email</label><input class="form-control" @bind="_newUser.Email" /></div>
+                    <div><label>Navn</label><input class="form-control" @bind="_newUser.DisplayName" /></div>
+                    <div><label>Adgangskode</label><input class="form-control" type="password" @bind="_newUser.Password" /></div>
+                    <div><label>Afdeling</label><select class="form-select" @bind="_newUser.DepartmentId"><option value="">Vælg afdeling</option>@foreach (var department in _departments) { <option value="@department.DepartmentId">@department.Name</option> }</select></div>
+                    <div><label>Rolle</label><select class="form-select" @bind="_newUser.RoleName"><option value="">Vælg rolle</option>@foreach (var role in GetAssignableRoles()) { <option value="@role.Name">@FormatRoleOption(role.Name)</option> }</select></div>
+                    <button class="vigor-primary-button" @onclick="CreateUserAsync" disabled="@_isSaving">@(_isSaving ? "Gemmer..." : "Opret bruger")</button>
+                </div>
+            </section>
+            <section class="vigor-panel compact-panel"><div class="vigor-panel-head"><div><h2>Rollehierarki</h2><p>Superbruger er systemadmin. Leder, vagtansvarlig og personale er driftsroller.</p></div></div><div class="vigor-info-list"><div><span class="vigor-dot status-red"></span>40 · Superbruger</div><div><span class="vigor-dot status-yellow"></span>30 · Leder</div><div><span class="vigor-dot status-yellow"></span>20 · Vagtansvarlig</div><div><span class="vigor-dot status-green"></span>10 · Personale</div></div></section>
+        </aside>
+    </div>
+</section>
+
+@code {
+    private readonly CreateUserAdminUserRequest _newUser = new();
+    private List<UserAdminUserDto> _users = new();
+    private List<UserAdminRoleDto> _roles = new();
+    private List<UserAdminDepartmentDto> _departments = new();
+    private bool _isLoading;
+    private bool _isSaving;
+    private string? _errorMessage;
+    private string? _successMessage;
+    private string? _currentUserId;
+    private string? _currentUserEmail;
+    private List<string> _currentUserRoles = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCurrentUserAsync();
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _isLoading = true;
+        _errorMessage = null;
+        _successMessage = null;
+
+        try
+        {
+            _roles = (await UserAdminApi.GetRolesAsync()).ToList();
+            _departments = (await UserAdminApi.GetDepartmentsAsync()).ToList();
+            _users = (await UserAdminApi.GetUsersAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task CreateUserAsync()
+    {
+        _isSaving = true;
+        _errorMessage = null;
+        _successMessage = null;
+
+        try
+        {
+            await UserAdminApi.CreateUserAsync(_newUser);
+            _successMessage = "Brugeren blev oprettet.";
+
+            _newUser.Email = string.Empty;
+            _newUser.Password = string.Empty;
+            _newUser.DisplayName = string.Empty;
+            _newUser.DepartmentId = null;
+            _newUser.RoleName = string.Empty;
+
+            _users = (await UserAdminApi.GetUsersAsync()).ToList();
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task UpdateRoleAsync(UserAdminUserDto user, string? roleName)
+    {
+        if (string.IsNullOrWhiteSpace(roleName) || roleName == user.PrimaryRole)
+        {
+            return;
+        }
+
+        if (IsCurrentUser(user))
+        {
+            _errorMessage = "Du kan ikke ændre rollen på den bruger, du selv er logget ind med.";
+            _users = (await UserAdminApi.GetUsersAsync()).ToList();
+            return;
+        }
+
+        if (IsHigherRoleThanCurrent(user))
+        {
+            _errorMessage = "Du kan ikke ændre en bruger med højere rolle end din egen.";
+            _users = (await UserAdminApi.GetUsersAsync()).ToList();
+            return;
+        }
+
+        if (GetRoleLevel(roleName) > GetCurrentRoleLevel())
+        {
+            _errorMessage = "Du kan ikke tildele en rolle, der er højere end din egen rolle.";
+            _users = (await UserAdminApi.GetUsersAsync()).ToList();
+            return;
+        }
+
+        _isSaving = true;
+        _errorMessage = null;
+        _successMessage = null;
+
+        try
+        {
+            var updated = await UserAdminApi.UpdateRoleAsync(user.UserId, new UpdateUserRoleRequest { RoleName = roleName });
+            if (updated != null)
+            {
+                ReplaceUser(updated);
+                _successMessage = $"Rollen for {updated.Email} blev opdateret.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+            _users = (await UserAdminApi.GetUsersAsync()).ToList();
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private async Task ToggleActiveAsync(UserAdminUserDto user)
+    {
+        _errorMessage = null;
+        _successMessage = null;
+
+        if (IsCurrentUser(user))
+        {
+            _errorMessage = "Du kan ikke ændre aktiv status på den bruger, du selv er logget ind med.";
+            return;
+        }
+
+        if (IsHigherRoleThanCurrent(user))
+        {
+            _errorMessage = "Du kan ikke ændre en bruger med højere rolle end din egen.";
+            return;
+        }
+
+        if (user.IsActive)
+        {
+            var confirmed = await JSRuntime.InvokeAsync<bool>(
+                "confirm",
+                $"Er du sikker på, at du vil deaktivere {user.Email}? Brugeren kan ikke logge ind, før den aktiveres igen.");
+
+            if (!confirmed)
+            {
+                return;
+            }
+        }
+
+        _isSaving = true;
+
+        try
+        {
+            var updated = await UserAdminApi.SetActiveAsync(user.UserId, new SetUserActiveRequest { IsActive = !user.IsActive });
+            if (updated != null)
+            {
+                ReplaceUser(updated);
+                _successMessage = updated.IsActive
+                    ? $"{updated.Email} blev aktiveret."
+                    : $"{updated.Email} blev deaktiveret.";
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+
+    private async Task LoadCurrentUserAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        _currentUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        _currentUserEmail = user.FindFirst(ClaimTypes.Email)?.Value
+                            ?? user.FindFirst("email")?.Value
+                            ?? user.Identity?.Name;
+        _currentUserRoles = user.FindAll(ClaimTypes.Role)
+            .Select(claim => claim.Value)
+            .Where(roleName => !string.IsNullOrWhiteSpace(roleName))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private bool IsCurrentUser(UserAdminUserDto user)
+    {
+        if (!string.IsNullOrWhiteSpace(_currentUserId)
+            && string.Equals(user.UserId, _currentUserId, StringComparison.Ordinal))
+        {
+            return true;
+        }
+
+        return !string.IsNullOrWhiteSpace(_currentUserEmail)
+               && string.Equals(user.Email, _currentUserEmail, StringComparison.OrdinalIgnoreCase);
+    }
+
+
+    private bool CanChangeRole(UserAdminUserDto user)
+    {
+        return !IsCurrentUser(user) && !IsHigherRoleThanCurrent(user);
+    }
+
+    private bool CanChangeActiveState(UserAdminUserDto user)
+    {
+        return !IsCurrentUser(user) && !IsHigherRoleThanCurrent(user);
+    }
+
+    private string? GetRoleSelectTitle(UserAdminUserDto user)
+    {
+        if (IsCurrentUser(user))
+        {
+            return "Du kan ikke ændre rollen på den bruger, du selv er logget ind med.";
+        }
+
+        if (IsHigherRoleThanCurrent(user))
+        {
+            return "Du kan ikke ændre en bruger med højere rolle end din egen.";
+        }
+
+        return null;
+    }
+
+    private string? GetActiveButtonTitle(UserAdminUserDto user)
+    {
+        if (IsCurrentUser(user))
+        {
+            return "Du kan ikke aktivere/deaktivere den bruger, du selv er logget ind med.";
+        }
+
+        if (IsHigherRoleThanCurrent(user))
+        {
+            return "Du kan ikke aktivere/deaktivere en bruger med højere rolle end din egen.";
+        }
+
+        return user.IsActive
+            ? "Deaktivér brugeren efter bekræftelse."
+            : "Aktivér brugeren igen.";
+    }
+
+    private IEnumerable<UserAdminRoleDto> GetAssignableRoles()
+    {
+        var currentLevel = GetCurrentRoleLevel();
+        return _roles
+            .Where(role => GetRoleLevel(role.Name) > 0 && GetRoleLevel(role.Name) <= currentLevel)
+            .OrderByDescending(role => GetRoleLevel(role.Name))
+            .ThenBy(role => role.Name);
+    }
+
+    private IEnumerable<UserAdminRoleDto> GetRoleOptionsForUser(UserAdminUserDto user)
+    {
+        var options = GetAssignableRoles().ToList();
+
+        if (!string.IsNullOrWhiteSpace(user.PrimaryRole)
+            && options.All(role => !string.Equals(role.Name, user.PrimaryRole, StringComparison.OrdinalIgnoreCase)))
+        {
+            options.Add(new UserAdminRoleDto { Name = user.PrimaryRole });
+        }
+
+        return options
+            .OrderByDescending(role => GetRoleLevel(role.Name))
+            .ThenBy(role => role.Name);
+    }
+
+    private bool IsHigherRoleThanCurrent(UserAdminUserDto user)
+    {
+        var targetLevel = GetRoleLevel(user.PrimaryRole);
+        return targetLevel > GetCurrentRoleLevel();
+    }
+
+    private int GetCurrentRoleLevel()
+    {
+        return _currentUserRoles.Select(GetRoleLevel).DefaultIfEmpty(0).Max();
+    }
+
+    private static int GetRoleLevel(string? roleName)
+    {
+        return roleName?.Trim() switch
+        {
+            "Personale" => 10,
+            "Vagtansvarlig" => 20,
+            "Leder" => 30,
+            "Superbruger" => 40,
+            _ => 0
+        };
+    }
+
+
+    private static string FormatRoleOption(string? roleName)
+    {
+        var level = GetRoleLevel(roleName);
+        var displayName = roleName?.Trim() switch
+        {
+            "Superbruger" => "Superbruger (systemadmin)",
+            _ => roleName
+        };
+
+        return level > 0
+            ? $"{level} - {displayName}"
+            : displayName ?? string.Empty;
+    }
+
+
+    private void ReplaceUser(UserAdminUserDto updated)
+    {
+        var index = _users.FindIndex(u => u.UserId == updated.UserId);
+        if (index >= 0)
+        {
+            _users[index] = updated;
+        }
+        else
+        {
+            _users.Add(updated);
+        }
+    }
+
+    private static string ShortUserId(string userId)
+    {
+        return string.IsNullOrWhiteSpace(userId) || userId.Length <= 8
+            ? userId
+            : userId[..8];
+    }
+}

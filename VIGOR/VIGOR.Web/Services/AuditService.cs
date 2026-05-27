@@ -146,6 +146,124 @@ namespace VIGOR.Web.Services
             return Task.CompletedTask;
         }
 
+
+        public Task LogNoteCreatedAsync(
+            int citizenId,
+            int noteId,
+            int departmentId,
+            string userId,
+            string? userDisplayNameSnapshot,
+            ShiftType shiftType,
+            CancellationToken cancellationToken = default)
+        {
+            AddEvent(
+                entityType: "Note",
+                entityId: noteId,
+                action: "NoteCreated",
+                description: "Note oprettet på borger.",
+                userId: userId,
+                userDisplayNameSnapshot: userDisplayNameSnapshot,
+                departmentId: departmentId,
+                citizenId: citizenId,
+                shiftType: shiftType);
+
+            return Task.CompletedTask;
+        }
+
+        public Task LogCitizenTaskCreatedAsync(
+            int citizenId,
+            int citizenTaskId,
+            string title,
+            int departmentId,
+            string userId,
+            string? userDisplayNameSnapshot,
+            ShiftType shiftType,
+            CancellationToken cancellationToken = default)
+        {
+            AddEvent(
+                entityType: "CitizenTask",
+                entityId: citizenTaskId,
+                action: "TaskCreated",
+                description: $"Opgave '{NormalizeDescriptionText(title)}' oprettet på borger.",
+                userId: userId,
+                userDisplayNameSnapshot: userDisplayNameSnapshot,
+                departmentId: departmentId,
+                citizenId: citizenId,
+                shiftType: shiftType);
+
+            return Task.CompletedTask;
+        }
+
+        public Task LogCitizenTaskCompletedAsync(
+            int citizenId,
+            int citizenTaskId,
+            string title,
+            int departmentId,
+            string userId,
+            string? userDisplayNameSnapshot,
+            ShiftType shiftType,
+            CancellationToken cancellationToken = default)
+        {
+            AddEvent(
+                entityType: "CitizenTask",
+                entityId: citizenTaskId,
+                action: "TaskCompleted",
+                description: $"Opgave '{NormalizeDescriptionText(title)}' afsluttet.",
+                userId: userId,
+                userDisplayNameSnapshot: userDisplayNameSnapshot,
+                departmentId: departmentId,
+                citizenId: citizenId,
+                shiftType: shiftType);
+
+            return Task.CompletedTask;
+        }
+
+        public Task LogStaffAssignedToCitizenAsync(
+            int citizenId,
+            int citizenStaffAssignmentId,
+            string employeeName,
+            int departmentId,
+            string userId,
+            string? userDisplayNameSnapshot,
+            CancellationToken cancellationToken = default)
+        {
+            AddEvent(
+                entityType: "CitizenStaffAssignment",
+                entityId: citizenStaffAssignmentId,
+                action: "StaffAssignedToCitizen",
+                description: $"Personale '{NormalizeDescriptionText(employeeName)}' tildelt borger.",
+                userId: userId,
+                userDisplayNameSnapshot: userDisplayNameSnapshot,
+                departmentId: departmentId,
+                citizenId: citizenId,
+                shiftType: null);
+
+            return Task.CompletedTask;
+        }
+
+        public Task LogStaffUnassignedFromCitizenAsync(
+            int citizenId,
+            int citizenStaffAssignmentId,
+            string employeeName,
+            int departmentId,
+            string userId,
+            string? userDisplayNameSnapshot,
+            CancellationToken cancellationToken = default)
+        {
+            AddEvent(
+                entityType: "CitizenStaffAssignment",
+                entityId: citizenStaffAssignmentId,
+                action: "StaffUnassignedFromCitizen",
+                description: $"Personale '{NormalizeDescriptionText(employeeName)}' fjernet fra borger.",
+                userId: userId,
+                userDisplayNameSnapshot: userDisplayNameSnapshot,
+                departmentId: departmentId,
+                citizenId: citizenId,
+                shiftType: null);
+
+            return Task.CompletedTask;
+        }
+
         private void AddEvent(
             string entityType,
             int entityId,

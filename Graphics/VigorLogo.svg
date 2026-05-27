@@ -1,0 +1,80 @@
+<svg width="900" height="900" viewBox="0 0 900 900" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">VIGOR Logo</title>
+  <desc id="desc">
+    Logo for VIGOR - Visual Integrated Governance and Overlap Registry.
+    The logo uses a stylized V, layered registry panels, a safety shield,
+    and green, yellow and red status indicators.
+  </desc>
+
+  <defs>
+    <linearGradient id="navyGradient" x1="180" y1="130" x2="700" y2="650" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#062B5F"></stop>
+      <stop offset="0.55" stop-color="#073A78"></stop>
+      <stop offset="1" stop-color="#041E42"></stop>
+    </linearGradient>
+
+    <linearGradient id="panelGradient1" x1="470" y1="120" x2="690" y2="310" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#BFD8EF"></stop>
+      <stop offset="1" stop-color="#7FB1DC"></stop>
+    </linearGradient>
+
+    <linearGradient id="panelGradient2" x1="420" y1="170" x2="640" y2="350" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#8EC0E8"></stop>
+      <stop offset="1" stop-color="#377DB8"></stop>
+    </linearGradient>
+
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="10" flood-color="#061B38" flood-opacity="0.15"></feDropShadow>
+    </filter>
+  </defs>
+
+  <!-- Logo mark -->
+  <g transform="translate(0, 20)" filter="url(#softShadow)">
+    
+    <!-- Back registry panel -->
+    <path d="M505 95H670C685 95 696 109 692 124L650 300H475L505 95Z" fill="url(#panelGradient1)" opacity="0.85"></path>
+
+    <!-- Middle registry panel -->
+    <path d="M430 145H615C631 145 642 160 638 175L598 345H395L430 145Z" fill="url(#panelGradient2)" opacity="0.95"></path>
+
+    <!-- Main V -->
+    <path d="M145 150H275L450 595L625 150H755L520 670H380L145 150Z" fill="url(#navyGradient)"></path>
+
+    <!-- Front white registry card cut-in -->
+    <path d="M370 200H535C556 200 571 220 566 240L515 455C511 472 496 485 478 485H422C404 485 389 472 385 455L334 240C329 220 349 200 370 200Z" fill="white" stroke="#073A78" stroke-width="12" stroke-linejoin="round"></path>
+
+    <!-- Shield -->
+    <path d="M450 260
+         C420 282 395 287 370 292
+         V340
+         C370 392 405 430 450 452
+         C495 430 530 392 530 340
+         V292
+         C505 287 480 282 450 260Z" fill="white" stroke="#073A78" stroke-width="14" stroke-linejoin="round"></path>
+
+    <!-- Checkmark -->
+    <path d="M412 350L440 378L493 315" stroke="#073A78" stroke-width="20" stroke-linecap="square" stroke-linejoin="miter"></path>
+
+    <!-- Status indicator base -->
+    <rect x="368" y="585" width="164" height="64" rx="32" fill="#041E42" opacity="0.98"></rect>
+
+    <!-- Green status -->
+    <circle cx="400" cy="617" r="24" fill="#2FA84F" stroke="white" stroke-width="8"></circle>
+
+    <!-- Yellow status -->
+    <circle cx="450" cy="617" r="24" fill="#F5A914" stroke="white" stroke-width="8"></circle>
+
+    <!-- Red status -->
+    <circle cx="500" cy="617" r="24" fill="#D93030" stroke="white" stroke-width="8"></circle>
+  </g>
+
+  <!-- Wordmark -->
+  <text x="450" y="770" text-anchor="middle" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="118" font-weight="800" letter-spacing="12" fill="#062B5F">
+    VIGOR
+  </text>
+
+  <!-- Subtitle -->
+  <text x="450" y="830" text-anchor="middle" font-family="Segoe UI, Arial, Helvetica, sans-serif" font-size="28" font-weight="600" letter-spacing="-0.5" fill="#173B67">
+    Visual Integrated Governance &amp; Overlap Registry
+  </text>
+</svg>

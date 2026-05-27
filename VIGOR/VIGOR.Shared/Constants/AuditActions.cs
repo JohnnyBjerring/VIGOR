@@ -10,5 +10,10 @@ namespace VIGOR.Shared.Constants
         public const string FixedMedicationGiven = nameof(FixedMedicationGiven);
         public const string FixedMedicationCancelled = nameof(FixedMedicationCancelled);
         public const string PnMedicationRegistered = nameof(PnMedicationRegistered);
+        public const string NoteCreated = nameof(NoteCreated);
+        public const string TaskCreated = nameof(TaskCreated);
+        public const string TaskCompleted = nameof(TaskCompleted);
+        public const string StaffAssignedToCitizen = nameof(StaffAssignedToCitizen);
+        public const string StaffUnassignedFromCitizen = nameof(StaffUnassignedFromCitizen);
     }
 }

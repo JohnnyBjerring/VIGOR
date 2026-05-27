@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VIGOR - Anonym oversigt</title>
+  <style>
+    :root {
+      --navy: #062b5f;
+      --navy-2: #0b3f7e;
+      --ink: #0d2340;
+      --muted: #5b6d83;
+      --line: rgba(8, 43, 95, 0.14);
+      --panel: rgba(255, 255, 255, 0.88);
+      --panel-strong: rgba(255, 255, 255, 0.95);
+      --green: #25a65a;
+      --yellow: #f6aa13;
+      --red: #dc3545;
+      --blue-soft: #eaf3fb;
+      --shadow: 0 22px 65px rgba(6, 43, 95, 0.18);
+      --radius: 28px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(5, 32, 65, 0.30), rgba(255, 255, 255, 0.72) 37%, rgba(255, 255, 255, 0.68) 63%, rgba(5, 32, 65, 0.30)),
+        radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.96), rgba(232, 242, 252, 0.74) 38%, rgba(105, 151, 197, 0.42) 100%);
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.86), rgba(255,255,255,0.38)),
+        url("vigor_bosted_background_clean.png");
+      background-size: cover;
+      background-position: center;
+      opacity: 0.48;
+      z-index: -2;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 8%, rgba(255,255,255,0.94), transparent 34%),
+        linear-gradient(180deg, rgba(255,255,255,0.40), rgba(6,43,95,0.08));
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .screen {
+      min-height: 100vh;
+      width: 100vw;
+      padding: 34px 42px;
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 20px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 20px;
+      align-items: center;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px 28px;
+      backdrop-filter: blur(16px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      min-width: 0;
+    }
+
+    .logo-mark {
+      width: 70px;
+      height: 70px;
+      flex: 0 0 auto;
+    }
+
+    .brand-title {
+      line-height: 1;
+    }
+
+    .brand-title h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 4vw, 4.4rem);
+      letter-spacing: 0.04em;
+      color: var(--navy);
+      font-weight: 900;
+    }
+
+    .brand-title p {
+      margin: 8px 0 0;
+      font-size: clamp(0.95rem, 1.2vw, 1.25rem);
+      color: var(--muted);
+      font-weight: 650;
+    }
+
+    .time-box {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 5px;
+      white-space: nowrap;
+    }
+
+    .time-box .label {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      font-size: 0.76rem;
+      font-weight: 900;
+    }
+
+    .time-box .time {
+      color: var(--navy);
+      font-size: clamp(1.6rem, 2.5vw, 2.6rem);
+      font-weight: 900;
+      line-height: 1;
+    }
+
+    .time-box .date {
+      color: var(--muted);
+      font-size: 0.98rem;
+      font-weight: 700;
+    }
+
+    .notice {
+      background: rgba(255, 255, 255, 0.84);
+      border: 1px solid rgba(6,43,95,0.13);
+      border-left: 8px solid var(--navy-2);
+      border-radius: 22px;
+      padding: 16px 22px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 12px 38px rgba(6,43,95,0.10);
+      backdrop-filter: blur(14px);
+    }
+
+    .notice-icon {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: rgba(6,43,95,0.10);
+      color: var(--navy);
+      font-weight: 900;
+      flex: 0 0 auto;
+    }
+
+    .notice strong {
+      color: var(--navy);
+    }
+
+    .notice span {
+      color: var(--muted);
+      font-size: clamp(0.98rem, 1.2vw, 1.15rem);
+      font-weight: 650;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1.85fr;
+      gap: 20px;
+      min-height: 0;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .panel-header {
+      padding: 22px 26px 14px;
+      border-bottom: 1px solid rgba(6,43,95,0.12);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--navy-2);
+      font-size: 0.75rem;
+      font-weight: 950;
+      margin-bottom: 8px;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 5px rgba(37, 166, 90, 0.13);
+    }
+
+    .panel-header h2 {
+      margin: 0;
+      font-size: clamp(1.35rem, 2vw, 2.05rem);
+      color: var(--ink);
+      letter-spacing: -0.04em;
+    }
+
+    .panel-header p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-weight: 620;
+      line-height: 1.45;
+    }
+
+    .summary-grid {
+      padding: 22px;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .metric-card {
+      position: relative;
+      min-height: 142px;
+      border: 1px solid rgba(6,43,95,0.12);
+      border-radius: 24px;
+      padding: 20px;
+      background:
+        radial-gradient(circle at 90% 12%, rgba(6,43,95,0.09), transparent 22%),
+        rgba(255, 255, 255, 0.76);
+      overflow: hidden;
+    }
+
+    .metric-card .name {
+      color: var(--muted);
+      font-size: 0.98rem;
+      font-weight: 850;
+      margin-bottom: 12px;
+    }
+
+    .metric-card .value {
+      font-size: clamp(2.4rem, 5vw, 4.7rem);
+      line-height: 0.9;
+      font-weight: 950;
+      color: var(--navy);
+      letter-spacing: -0.08em;
+    }
+
+    .metric-card .sub {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      font-weight: 650;
+    }
+
+    .metric-card.red .value { color: var(--red); }
+    .metric-card.yellow .value { color: var(--yellow); }
+    .metric-card.green .value { color: var(--green); }
+
+    .citizen-panel {
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .citizen-grid {
+      padding: 22px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      align-content: start;
+      overflow: auto;
+    }
+
+    .anon-card {
+      position: relative;
+      min-height: 150px;
+      padding: 18px 18px 16px;
+      background: rgba(255,255,255,0.82);
+      border: 1px solid rgba(6,43,95,0.12);
+      border-radius: 24px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: start;
+      box-shadow: 0 10px 30px rgba(6,43,95,0.08);
+      overflow: hidden;
+    }
+
+    .anon-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 8px;
+      background: var(--status);
+    }
+
+    .anon-card .info {
+      padding-left: 8px;
+      min-width: 0;
+    }
+
+    .anon-card h3 {
+      margin: 0;
+      color: var(--ink);
+      font-size: clamp(1.05rem, 1.4vw, 1.32rem);
+      letter-spacing: -0.02em;
+    }
+
+    .anon-card .state-text {
+      margin-top: 7px;
+      color: var(--muted);
+      font-size: 0.96rem;
+      font-weight: 700;
+    }
+
+    .anon-card .hint {
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 650;
+    }
+
+    .status-dot-large {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--status);
+      box-shadow:
+        0 0 0 8px rgba(255,255,255,0.75),
+        0 8px 26px rgba(6,43,95,0.18);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 88px;
+      height: 34px;
+      padding: 0 12px;
+      border-radius: 999px;
+      color: white;
+      font-weight: 900;
+      font-size: 0.9rem;
+      background: var(--status);
+      margin-top: 20px;
+    }
+
+    .anon-card.status-red { --status: var(--red); }
+    .anon-card.status-yellow { --status: var(--yellow); }
+    .anon-card.status-green { --status: var(--green); }
+
+    .footer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: center;
+      color: rgba(13, 35, 64, 0.74);
+      font-weight: 750;
+      font-size: 0.98rem;
+      padding: 0 6px;
+    }
+
+    .security-strip {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .security-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.75);
+      border: 1px solid rgba(6,43,95,0.12);
+      color: var(--navy);
+      font-weight: 900;
+      box-shadow: 0 6px 22px rgba(6,43,95,0.08);
+    }
+
+    .security-chip .mini-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+
+    @media (max-width: 1100px) {
+      html, body {
+        overflow: auto;
+      }
+
+      .screen {
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .topbar,
+      .main-grid,
+      .footer {
+        grid-template-columns: 1fr;
+      }
+
+      .time-box {
+        align-items: flex-start;
+      }
+
+      .summary-grid,
+      .citizen-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .security-strip {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (min-width: 1600px) {
+      .citizen-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="screen" aria-label="VIGOR anonym oversigtsskærm">
+    <header class="topbar">
+      <div class="brand">
+        <svg class="logo-mark" viewBox="0 0 900 900" aria-hidden="true">
+          <defs>
+            <linearGradient id="vigorNavy" x1="180" y1="130" x2="700" y2="650" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#062B5F"/>
+              <stop offset="0.55" stop-color="#073A78"/>
+              <stop offset="1" stop-color="#041E42"/>
+            </linearGradient>
+            <linearGradient id="panelA" x1="470" y1="120" x2="690" y2="310" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#BFD8EF"/>
+              <stop offset="1" stop-color="#7FB1DC"/>
+            </linearGradient>
+            <linearGradient id="panelB" x1="420" y1="170" x2="640" y2="350" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#8EC0E8"/>
+              <stop offset="1" stop-color="#377DB8"/>
+            </linearGradient>
+          </defs>
+          <g transform="translate(0, 20)">
+            <path d="M505 95H670C685 95 696 109 692 124L650 300H475L505 95Z" fill="url(#panelA)" opacity="0.85"/>
+            <path d="M430 145H615C631 145 642 160 638 175L598 345H395L430 145Z" fill="url(#panelB)" opacity="0.95"/>
+            <path d="M145 150H275L450 595L625 150H755L520 670H380L145 150Z" fill="url(#vigorNavy)"/>
+            <path d="M370 200H535C556 200 571 220 566 240L515 455C511 472 496 485 478 485H422C404 485 389 472 385 455L334 240C329 220 349 200 370 200Z" fill="white" stroke="#073A78" stroke-width="12" stroke-linejoin="round"/>
+            <path d="M450 260 C420 282 395 287 370 292 V340 C370 392 405 430 450 452 C495 430 530 392 530 340 V292 C505 287 480 282 450 260Z" fill="white" stroke="#073A78" stroke-width="14" stroke-linejoin="round"/>
+            <path d="M412 350L440 378L493 315" stroke="#073A78" stroke-width="20" stroke-linecap="square" stroke-linejoin="miter"/>
+            <rect x="368" y="585" width="164" height="64" rx="32" fill="#041E42"/>
+            <circle cx="400" cy="617" r="24" fill="#2FA84F" stroke="white" stroke-width="8"/>
+            <circle cx="450" cy="617" r="24" fill="#F5A914" stroke="white" stroke-width="8"/>
+            <circle cx="500" cy="617" r="24" fill="#D93030" stroke="white" stroke-width="8"/>
+          </g>
+        </svg>
+
+        <div class="brand-title">
+          <h1>Anonym oversigt</h1>
+          <p>VIGOR public view · kun anonymiseret statusoverblik</p>
+        </div>
+      </div>
+
+      <div class="time-box">
+        <div class="label">Senest opdateret</div>
+        <div class="time" id="clock">22:47</div>
+        <div class="date" id="date">26.05.2026</div>
+      </div>
+    </header>
+
+    <section class="notice">
+      <div class="notice-icon">GDPR</div>
+      <span><strong>Ingen persondata vises.</strong> Skærmen viser kun anonyme statusdata og må ikke bruges til medicin, noter, opgaver eller borgeroverlevering.</span>
+    </section>
+
+    <section class="main-grid">
+      <aside class="panel">
+        <div class="panel-header">
+          <div class="eyebrow">Statusresumé</div>
+          <h2>Aktuelt overblik</h2>
+          <p>Samlet anonymt overblik for den aktive afdeling.</p>
+        </div>
+
+        <div class="summary-grid">
+          <article class="metric-card">
+            <div class="name">Samlet antal</div>
+            <div class="value" id="totalCount">6</div>
+            <div class="sub">Anonyme borgere i oversigten</div>
+          </article>
+
+          <article class="metric-card green">
+            <div class="name">Stabil</div>
+            <div class="value" id="greenCount">3</div>
+            <div class="sub">Normal drift</div>
+          </article>
+
+          <article class="metric-card yellow">
+            <div class="name">Opmærksomhed</div>
+            <div class="value" id="yellowCount">2</div>
+            <div class="sub">Kræver opmærksomhed</div>
+          </article>
+
+          <article class="metric-card red">
+            <div class="name">Kritisk</div>
+            <div class="value" id="redCount">1</div>
+            <div class="sub">Kræver akut overblik</div>
+          </article>
+        </div>
+      </aside>
+
+      <section class="panel citizen-panel">
+        <div class="panel-header">
+          <div class="eyebrow">Anonyme statuskort</div>
+          <h2>Borgere uden personhenførbare oplysninger</h2>
+          <p>Kun statusfarve, anonym label og neutral statusforklaring vises.</p>
+        </div>
+
+        <div class="citizen-grid" id="citizenGrid"></div>
+      </section>
+    </section>
+
+    <footer class="footer">
+      <div>
+        Public oversigt · Automatisk opdatering hvert 30. sekund · VIGOR viser ikke navne, medicin, noter, opgaver eller brugerreferencer her.
+      </div>
+
+      <div class="security-strip" aria-label="Dataminimering">
+        <span class="security-chip"><span class="mini-dot"></span> Anonymiseret</span>
+        <span class="security-chip"><span class="mini-dot"></span> Dataminimeret</span>
+        <span class="security-chip"><span class="mini-dot"></span> Public-safe</span>
+      </div>
+    </footer>
+  </main>
+
+  <script>
+    /*
+      VIGOR anonym oversigt
+      Kun mockdata uden personhenførbare oplysninger.
+      Ingen navne, CitizenId, medicin, noter, opgavetekst eller brugerreferencer vises.
+    */
+
+    const anonymousCitizens = [
+      { label: "Borger 1", status: "yellow", text: "Kræver opmærksomhed", hint: "Vises kun som anonym status" },
+      { label: "Borger 2", status: "green", text: "Stabil", hint: "Normal drift" },
+      { label: "Borger 3", status: "yellow", text: "Kræver opmærksomhed", hint: "Vises kun som anonym status" },
+      { label: "Borger 4", status: "red", text: "Kritisk", hint: "Kræver faglig opfølgning i lukket system" },
+      { label: "Borger 5", status: "green", text: "Stabil", hint: "Normal drift" },
+      { label: "Borger 6", status: "green", text: "Stabil", hint: "Normal drift" }
+    ];
+
+    const statusLabels = {
+      green: "Stabil",
+      yellow: "Opmærksomhed",
+      red: "Kritisk"
+    };
+
+    function renderCitizens() {
+      const grid = document.getElementById("citizenGrid");
+      grid.innerHTML = anonymousCitizens.map(citizen => `
+        <article class="anon-card status-${citizen.status}" aria-label="${citizen.label}: ${statusLabels[citizen.status]}">
+          <div class="info">
+            <h3>${citizen.label}</h3>
+            <div class="state-text">${citizen.text}</div>
+            <div class="hint">${citizen.hint}</div>
+            <div class="status-pill">${statusLabels[citizen.status]}</div>
+          </div>
+          <div class="status-dot-large" title="${statusLabels[citizen.status]}"></div>
+        </article>
+      `).join("");
+
+      document.getElementById("totalCount").textContent = anonymousCitizens.length;
+      document.getElementById("greenCount").textContent = anonymousCitizens.filter(c => c.status === "green").length;
+      document.getElementById("yellowCount").textContent = anonymousCitizens.filter(c => c.status === "yellow").length;
+      document.getElementById("redCount").textContent = anonymousCitizens.filter(c => c.status === "red").length;
+    }
+
+    function updateClock() {
+      const now = new Date();
+      document.getElementById("clock").textContent = now.toLocaleTimeString("da-DK", {
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      document.getElementById("date").textContent = now.toLocaleDateString("da-DK", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      });
+    }
+
+    renderCitizens();
+    updateClock();
+    setInterval(updateClock, 30000);
+  </script>
+</body>
+</html>

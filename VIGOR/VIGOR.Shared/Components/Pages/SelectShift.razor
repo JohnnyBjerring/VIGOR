@@ -1,4 +1,5 @@
 @page "/shift/select"
+@using System.Security.Claims
 @using VIGOR.Shared.DTOs
 @using VIGOR.Shared.Enums
 @using VIGOR.Shared.Interfaces.Services
@@ -6,76 +7,108 @@
 @inject IActiveShiftContextState ActiveShiftContextState
 @inject NavigationManager NavigationManager
 
-<PageTitle>Vælg aktiv vagt</PageTitle>
+<PageTitle>Vælg aktiv vagt – VIGOR</PageTitle>
 
-<div class="row justify-content-center">
-    <div class="col-xl-8 col-lg-10">
-        <div class="mb-4">
-            <h2 class="mb-2">Vælg aktiv vagt</h2>
-            <p class="text-muted mb-0">
-                Vælg hvilken vagttype dit arbejde vedrører. Valget gemmes som aktiv vagtkontekst i denne session,
-                så senere overlap-, note- og opgaveflows kan kobles til den rigtige vagt.
-            </p>
-        </div>
-
-        @if (!string.IsNullOrWhiteSpace(_errorMessage))
+<AuthorizeView Context="authContext">
+    <Authorized>
+        @if (HasOperationalAccess(authContext.User))
         {
-            <div class="alert alert-danger" role="alert">
-                @_errorMessage
-            </div>
-        }
+            <section class="vigor-page shift-select-page" aria-label="Vælg aktiv vagt">
+                <header class="vigor-page-hero compact shift-hero">
+                    <div>
+                        <div class="vigor-eyebrow">Vagtkontekst</div>
+                        <h1>Vælg aktiv vagt</h1>
+                        <p>Vælg dag, aften eller nat før du arbejder videre i borgeroversigten.</p>
+                    </div>
+                    <div class="vigor-context-pills" aria-label="Aktiv kontekst">
+                        <span class="vigor-pill">Rolle: <strong>@GetPrimaryDisplayRole(authContext.User)</strong></span>
+                        <span class="vigor-pill">Aktiv vagt: <strong>@GetCurrentShiftLabel()</strong></span>
+                        <span class="vigor-pill">Dato: <strong>@DateTime.Now.ToString("dd.MM.yyyy")</strong></span>
+                    </div>
+                </header>
 
-        <div class="alert alert-info" role="alert">
-            Systemet foreslår <strong>@_suggestedShiftType.ToDanishDisplayName()</strong> ud fra lokalt klokkeslæt,
-            men du skal stadig bekræfte valget manuelt.
-        </div>
+                @if (!string.IsNullOrWhiteSpace(_errorMessage))
+                {
+                    <div class="vigor-alert danger" role="alert">@_errorMessage</div>
+                }
 
-        <div class="row g-3">
-            @foreach (var shiftType in _shiftTypes)
-            {
-                var isSuggested = shiftType == _suggestedShiftType;
-                var isSubmitting = _submittingShiftType == shiftType;
-
-                <div class="col-md-4">
-                    <button type="button"
-                            class="btn @(isSuggested ? "btn-dark" : "btn-outline-dark") w-100 h-100 p-4 text-start"
-                            disabled="@(_submittingShiftType != null)"
-                            @onclick="@(async () => await SelectShiftAsync(shiftType))">
-                        <div class="d-flex justify-content-between align-items-start gap-2">
-                            <div>
-                                <div class="fs-4 fw-bold">@shiftType.ToDanishDisplayName()</div>
-                                <div class="small @(isSuggested ? "text-white-50" : "text-muted")">
-                                    @GetShiftDescription(shiftType)
-                                </div>
-                            </div>
-
-                            @if (isSuggested)
-                            {
-                                <span class="badge bg-light text-dark">Foreslået</span>
-                            }
+                <section class="vigor-panel shift-panel">
+                    <div class="vigor-panel-head">
+                        <div>
+                            <h2>Vælg vagt</h2>
+                            <p>Foreslået vagt: <strong>@_suggestedShiftType.ToDanishDisplayName()</strong>. Bekræft manuelt.</p>
                         </div>
+                    </div>
 
-                        @if (isSubmitting)
+                    <div class="shift-card-grid">
+                        @foreach (var shiftType in _shiftTypes)
                         {
-                            <div class="mt-3">
-                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                Gemmer vagtkontekst...
-                            </div>
-                        }
-                    </button>
-                </div>
-            }
-        </div>
+                            var isSuggested = shiftType == _suggestedShiftType;
+                            var isSubmitting = _submittingShiftType == shiftType;
+                            var isCurrent = ActiveShiftContextState.Current?.ShiftType == shiftType;
 
-        @if (ActiveShiftContextState.Current != null)
-        {
-            <div class="border rounded p-3 mt-4 bg-light">
-                <div class="fw-bold">Aktuel vagtkontekst</div>
-                <div>@ActiveShiftContextState.Current.DisplayName valgt @ActiveShiftContextState.Current.SelectedAtUtc.ToLocalTime().ToString("dd-MM-yyyy HH:mm")</div>
-            </div>
+                            <button type="button"
+                                    class="shift-choice-card @(isSuggested ? "suggested" : string.Empty) @(isCurrent ? "current" : string.Empty)"
+                                    disabled="@(_submittingShiftType != null)"
+                                    @onclick="@(async () => await SelectShiftAsync(shiftType))">
+                                <span class="shift-icon">@GetShiftIcon(shiftType)</span>
+                                <strong>@shiftType.ToDanishDisplayName()</strong>
+                                <small>@GetShiftDescription(shiftType)</small>
+
+                                @if (isCurrent)
+                                {
+                                    <span class="shift-badge">Aktiv</span>
+                                }
+                                else if (isSuggested)
+                                {
+                                    <span class="shift-badge">Foreslået</span>
+                                }
+
+                                @if (isSubmitting)
+                                {
+                                    <span class="shift-loading">
+                                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                        Gemmer...
+                                    </span>
+                                }
+                            </button>
+                        }
+                    </div>
+
+                    @if (ActiveShiftContextState.Current != null)
+                    {
+                        <div class="shift-current-row">
+                            <div>
+                                <strong>Aktuel vagtkontekst</strong>
+                                <span>@ActiveShiftContextState.Current.DisplayName · valgt @ActiveShiftContextState.Current.SelectedAtUtc.ToLocalTime().ToString("dd-MM-yyyy HH:mm")</span>
+                            </div>
+                            <a class="vigor-primary-button" href="citizens">Gå til borgere</a>
+                        </div>
+                    }
+                </section>
+            </section>
         }
-    </div>
-</div>
+        else
+        {
+            <section class="vigor-page">
+                <div class="vigor-panel">
+                    <h1>Ingen adgang til vagtvalg</h1>
+                    <p>Denne side er kun for driftsrollerne Personale, Vagtansvarlig og Leder.</p>
+                    <a class="vigor-primary-button" href="admin">Gå til administration</a>
+                </div>
+            </section>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <section class="vigor-page">
+            <div class="vigor-panel">
+                <h1>Du skal være logget ind</h1>
+                <p>Log ind for at vælge aktiv vagt.</p>
+                <a class="vigor-primary-button" href="login">Gå til login</a>
+            </div>
+        </section>
+    </NotAuthorized>
+</AuthorizeView>
 
 @code {
     private readonly ShiftType[] _shiftTypes =
@@ -125,14 +158,45 @@
         }
     }
 
+    private static bool HasOperationalAccess(ClaimsPrincipal user)
+    {
+        return user.IsInRole("Leder")
+               || user.IsInRole("Vagtansvarlig")
+               || user.IsInRole("Personale");
+    }
+
+    private string GetCurrentShiftLabel()
+    {
+        return ActiveShiftContextState.Current?.DisplayName ?? "Ingen aktiv vagt";
+    }
+
+    private static string GetPrimaryDisplayRole(ClaimsPrincipal user)
+    {
+        if (user.IsInRole("Leder")) return "Leder";
+        if (user.IsInRole("Vagtansvarlig")) return "Vagtansvarlig";
+        if (user.IsInRole("Personale")) return "Personale";
+        return "Bruger";
+    }
+
+    private static string GetShiftIcon(ShiftType shiftType)
+    {
+        return shiftType switch
+        {
+            ShiftType.Day => "☀",
+            ShiftType.Evening => "◐",
+            ShiftType.Night => "☾",
+            _ => "•"
+        };
+    }
+
     private static string GetShiftDescription(ShiftType shiftType)
     {
         return shiftType switch
         {
-            ShiftType.Day => "Typisk overlap omkring morgen/formiddag.",
-            ShiftType.Evening => "Typisk overlap omkring eftermiddag/aften.",
-            ShiftType.Night => "Typisk overlap omkring sen aften/nat.",
-            _ => string.Empty
+            ShiftType.Day => "Morgen og formiddag",
+            ShiftType.Evening => "Eftermiddag og aften",
+            ShiftType.Night => "Sen aften og nat",
+            _ => "Ukendt vagt"
         };
     }
 }

@@ -1,9 +1,40 @@
 @page "/admin"
+@using System.Security.Claims
+@using VIGOR.Shared.Components
 
 <PageTitle>Administration – VIGOR</PageTitle>
 
-<div class="p-4">
-    <h1>Administration</h1>
-    <p>Velkommen til VIGOR. Dette er din startside som Leder.</p>
-    <p><em>Tom oversigt...</em></p>
-</div>
+<AuthorizeView Context="authContext">
+    <Authorized>
+        @if (CanAccessAdministration(authContext.User))
+        {
+            <StartDashboard />
+        }
+        else
+        {
+            <section class="vigor-start-page">
+                <div class="vigor-panel">
+                    <h1>Ingen adgang til administration</h1>
+                    <p>Administrationsområdet er kun for Leder og Superbruger.</p>
+                    <a class="vigor-primary-button" href="shift/select">Gå til vagtvalg</a>
+                </div>
+            </section>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <section class="vigor-start-page">
+            <div class="vigor-panel">
+                <h1>Du skal være logget ind</h1>
+                <p>Log ind for at bruge administrationsområdet.</p>
+                <a class="vigor-primary-button" href="login">Gå til login</a>
+            </div>
+        </section>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private static bool CanAccessAdministration(ClaimsPrincipal user)
+    {
+        return user.IsInRole("Leder") || user.IsInRole("Superbruger");
+    }
+}

@@ -1,6 +1,6 @@
-﻿namespace VIGOR.MAUI;
-using Microsoft.AspNetCore.Components.WebView;
-using System.IO;
+using Microsoft.Maui.Controls;
+
+namespace VIGOR.MAUI;
 
 public partial class MainPage : ContentPage
 {

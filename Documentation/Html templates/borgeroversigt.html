@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VIGOR - Borgeroversigt</title>
+  <style>
+    :root {
+      --navy: #062b5f;
+      --navy-2: #0b3f7e;
+      --ink: #0d2340;
+      --muted: #5d6f86;
+      --line: rgba(8, 43, 95, 0.14);
+      --panel: rgba(255, 255, 255, 0.88);
+      --panel-strong: rgba(255, 255, 255, 0.96);
+      --green: #25a65a;
+      --yellow: #f6aa13;
+      --red: #dc3545;
+      --shadow: 0 18px 55px rgba(6, 43, 95, 0.18);
+      --radius: 26px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Segoe UI", Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(5, 32, 65, 0.30), rgba(255, 255, 255, 0.76) 35%, rgba(255, 255, 255, 0.72) 68%, rgba(5, 32, 65, 0.25)),
+        radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.96), rgba(232, 242, 252, 0.78) 42%, rgba(105, 151, 197, 0.42) 100%);
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.88), rgba(255,255,255,0.44)),
+        url("vigor_bosted_background_clean.png");
+      background-size: cover;
+      background-position: center;
+      opacity: 0.46;
+      z-index: -2;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(255,255,255,0.96), transparent 30%),
+        linear-gradient(180deg, rgba(255,255,255,0.18), rgba(6,43,95,0.10));
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    .app {
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 276px 1fr;
+      gap: 20px;
+      padding: 20px;
+    }
+
+    .sidebar {
+      min-height: 0;
+      background: rgba(255, 255, 255, 0.74);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      padding: 22px;
+      display: grid;
+      grid-template-rows: auto auto 1fr auto;
+      gap: 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid rgba(6,43,95,0.12);
+    }
+
+    .logo-mark {
+      width: 52px;
+      height: 52px;
+      flex: 0 0 auto;
+    }
+
+    .brand h1 {
+      margin: 0;
+      color: var(--navy);
+      font-size: 1.28rem;
+      letter-spacing: 0.12em;
+      font-weight: 950;
+    }
+
+    .brand p {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      line-height: 1.25;
+    }
+
+    .menu-label {
+      margin: 0;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      font-size: 0.74rem;
+      font-weight: 950;
+    }
+
+    .nav {
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .nav a {
+      min-height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-radius: 16px;
+      padding: 0 16px;
+      text-decoration: none;
+      color: var(--ink);
+      background: rgba(255,255,255,0.62);
+      border: 1px solid rgba(6,43,95,0.10);
+      font-weight: 850;
+      box-shadow: 0 8px 24px rgba(6,43,95,0.07);
+    }
+
+    .nav a.active {
+      background: linear-gradient(135deg, var(--navy), var(--navy-2));
+      color: white;
+      box-shadow: 0 14px 34px rgba(6,43,95,0.28);
+    }
+
+    .nav .badge {
+      min-width: 28px;
+      height: 24px;
+      padding: 0 8px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.78);
+      color: var(--navy);
+      font-size: 0.78rem;
+      font-weight: 950;
+    }
+
+    .user-card {
+      background: rgba(255,255,255,0.74);
+      border: 1px solid rgba(6,43,95,0.12);
+      border-radius: 18px;
+      padding: 16px;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 700;
+      box-shadow: 0 8px 26px rgba(6,43,95,0.08);
+    }
+
+    .user-card strong {
+      color: var(--ink);
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.96rem;
+    }
+
+    .logout {
+      width: 100%;
+      margin-top: 12px;
+      height: 42px;
+      border: 0;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.86);
+      color: var(--navy);
+      font-weight: 900;
+      cursor: pointer;
+    }
+
+    .content {
+      min-width: 0;
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto auto 1fr;
+      gap: 16px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 18px;
+      align-items: center;
+      background: rgba(255,255,255,0.82);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      padding: 22px 24px;
+      backdrop-filter: blur(18px);
+    }
+
+    .page-title {
+      min-width: 0;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 8px;
+      color: var(--navy-2);
+      text-transform: uppercase;
+      letter-spacing: 0.13em;
+      font-size: 0.73rem;
+      font-weight: 950;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 0 5px rgba(37,166,90,0.13);
+    }
+
+    .page-title h2 {
+      margin: 0;
+      color: var(--ink);
+      font-size: clamp(2rem, 3.1vw, 4rem);
+      line-height: 0.95;
+      letter-spacing: -0.06em;
+      font-weight: 950;
+    }
+
+    .page-title p {
+      margin: 9px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    .session-pills {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      height: 38px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.75);
+      border: 1px solid rgba(6,43,95,0.12);
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .pill strong {
+      color: var(--navy);
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .search-box {
+      background: rgba(255,255,255,0.86);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: 0 12px 34px rgba(6,43,95,0.10);
+      padding: 14px 16px;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      align-items: center;
+      gap: 12px;
+      backdrop-filter: blur(14px);
+    }
+
+    .search-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      background: rgba(6,43,95,0.09);
+      color: var(--navy);
+      font-weight: 950;
+    }
+
+    .search-box label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      font-weight: 950;
+      margin-bottom: 4px;
+    }
+
+    .search-box input {
+      width: 100%;
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: var(--ink);
+      font-size: 1.12rem;
+      font-weight: 750;
+    }
+
+    .quick-status {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .status-filter {
+      height: 50px;
+      padding: 0 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      border-radius: 16px;
+      border: 1px solid rgba(6,43,95,0.12);
+      background: rgba(255,255,255,0.84);
+      color: var(--ink);
+      font-weight: 900;
+      box-shadow: 0 10px 28px rgba(6,43,95,0.08);
+      cursor: pointer;
+    }
+
+    .status-filter.active {
+      outline: 3px solid rgba(6,43,95,0.14);
+      background: var(--navy);
+      color: white;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--color);
+      box-shadow: 0 0 0 5px color-mix(in srgb, var(--color) 14%, transparent);
+    }
+
+    .dot.yellow { --color: var(--yellow); }
+    .dot.green { --color: var(--green); }
+    .dot.red { --color: var(--red); }
+
+    .overview {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: 1fr 330px;
+      gap: 16px;
+    }
+
+    .citizen-panel,
+    .side-panel {
+      min-height: 0;
+      background: rgba(255,255,255,0.84);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      overflow: hidden;
+      display: grid;
+      grid-template-rows: auto 1fr;
+    }
+
+    .panel-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid rgba(6,43,95,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .panel-header h3 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 1.3rem;
+      letter-spacing: -0.03em;
+    }
+
+    .panel-header span {
+      color: var(--muted);
+      font-weight: 750;
+      font-size: 0.92rem;
+    }
+
+    .citizen-grid {
+      padding: 18px;
+      overflow: auto;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      align-content: start;
+    }
+
+    .citizen-card {
+      position: relative;
+      border-radius: 24px;
+      border: 1px solid rgba(6,43,95,0.12);
+      background: rgba(255,255,255,0.86);
+      box-shadow: 0 12px 34px rgba(6,43,95,0.10);
+      overflow: hidden;
+      padding: 18px 18px 16px;
+      min-height: 188px;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      gap: 14px;
+    }
+
+    .citizen-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 9px;
+      background: var(--status);
+    }
+
+    .citizen-card::after {
+      content: "";
+      position: absolute;
+      right: -36px;
+      top: -42px;
+      width: 128px;
+      height: 128px;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--status) 12%, transparent);
+      pointer-events: none;
+    }
+
+    .citizen-card.status-yellow { --status: var(--yellow); }
+    .citizen-card.status-green { --status: var(--green); }
+    .citizen-card.status-red { --status: var(--red); }
+
+    .citizen-head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      align-items: start;
+      position: relative;
+      z-index: 1;
+      padding-left: 8px;
+    }
+
+    .citizen-head h4 {
+      margin: 0;
+      color: var(--ink);
+      font-size: 1.38rem;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+    }
+
+    .citizen-meta {
+      margin-top: 6px;
+      color: var(--muted);
+      font-weight: 740;
+      font-size: 0.9rem;
+    }
+
+    .status-badge {
+      min-width: 84px;
+      height: 34px;
+      border-radius: 999px;
+      display: inline-grid;
+      place-items: center;
+      padding: 0 13px;
+      background: var(--status);
+      color: white;
+      font-size: 0.86rem;
+      font-weight: 950;
+      box-shadow: 0 8px 24px color-mix(in srgb, var(--status) 28%, transparent);
+    }
+
+    .citizen-info {
+      position: relative;
+      z-index: 1;
+      padding-left: 8px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .mini {
+      min-height: 62px;
+      border-radius: 16px;
+      background: rgba(239,246,253,0.78);
+      border: 1px solid rgba(6,43,95,0.09);
+      padding: 10px 11px;
+    }
+
+    .mini .label {
+      color: var(--muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 950;
+      margin-bottom: 5px;
+    }
+
+    .mini .value {
+      color: var(--ink);
+      font-size: 0.91rem;
+      font-weight: 850;
+      line-height: 1.28;
+    }
+
+    .citizen-actions {
+      position: relative;
+      z-index: 1;
+      padding-left: 8px;
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .last-note {
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 700;
+      min-width: 0;
+    }
+
+    .open-btn {
+      height: 42px;
+      min-width: 112px;
+      border: 0;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--navy), var(--navy-2));
+      color: white;
+      font-weight: 950;
+      cursor: pointer;
+      box-shadow: 0 12px 30px rgba(6,43,95,0.24);
+    }
+
+    .side-body {
+      padding: 16px;
+      overflow: auto;
+      display: grid;
+      gap: 12px;
+      align-content: start;
+    }
+
+    .summary-card {
+      border-radius: 20px;
+      padding: 16px;
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(6,43,95,0.12);
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 10px 26px rgba(6,43,95,0.08);
+    }
+
+    .summary-card .label {
+      color: var(--muted);
+      font-weight: 850;
+      font-size: 0.88rem;
+    }
+
+    .summary-card .value {
+      color: var(--navy);
+      font-size: 2rem;
+      line-height: 1;
+      font-weight: 950;
+      letter-spacing: -0.06em;
+    }
+
+    .summary-card.yellow .value { color: var(--yellow); }
+    .summary-card.green .value { color: var(--green); }
+    .summary-card.red .value { color: var(--red); }
+
+    .task-card {
+      border-radius: 18px;
+      padding: 14px;
+      background: rgba(255,255,255,0.76);
+      border: 1px solid rgba(6,43,95,0.10);
+    }
+
+    .task-card strong {
+      color: var(--ink);
+      display: block;
+      font-size: 0.95rem;
+      margin-bottom: 5px;
+    }
+
+    .task-card span {
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 750;
+    }
+
+    @media (max-width: 1280px) {
+      html, body {
+        overflow: auto;
+      }
+
+      .app {
+        min-height: 100vh;
+        height: auto;
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .overview {
+        grid-template-columns: 1fr;
+      }
+
+      .citizen-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .app {
+        padding: 12px;
+      }
+
+      .topbar,
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      .session-pills,
+      .quick-status {
+        justify-content: flex-start;
+      }
+
+      .citizen-info {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app">
+    <aside class="sidebar" aria-label="Menu">
+      <div class="brand">
+        <svg class="logo-mark" viewBox="0 0 900 900" aria-hidden="true">
+          <defs>
+            <linearGradient id="vigorNavy" x1="180" y1="130" x2="700" y2="650" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#062B5F"/>
+              <stop offset="0.55" stop-color="#073A78"/>
+              <stop offset="1" stop-color="#041E42"/>
+            </linearGradient>
+            <linearGradient id="panelA" x1="470" y1="120" x2="690" y2="310" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#BFD8EF"/>
+              <stop offset="1" stop-color="#7FB1DC"/>
+            </linearGradient>
+            <linearGradient id="panelB" x1="420" y1="170" x2="640" y2="350" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#8EC0E8"/>
+              <stop offset="1" stop-color="#377DB8"/>
+            </linearGradient>
+          </defs>
+          <g transform="translate(0, 20)">
+            <path d="M505 95H670C685 95 696 109 692 124L650 300H475L505 95Z" fill="url(#panelA)" opacity="0.85"/>
+            <path d="M430 145H615C631 145 642 160 638 175L598 345H395L430 145Z" fill="url(#panelB)" opacity="0.95"/>
+            <path d="M145 150H275L450 595L625 150H755L520 670H380L145 150Z" fill="url(#vigorNavy)"/>
+            <path d="M370 200H535C556 200 571 220 566 240L515 455C511 472 496 485 478 485H422C404 485 389 472 385 455L334 240C329 220 349 200 370 200Z" fill="white" stroke="#073A78" stroke-width="12" stroke-linejoin="round"/>
+            <path d="M450 260 C420 282 395 287 370 292 V340 C370 392 405 430 450 452 C495 430 530 392 530 340 V292 C505 287 480 282 450 260Z" fill="white" stroke="#073A78" stroke-width="14" stroke-linejoin="round"/>
+            <path d="M412 350L440 378L493 315" stroke="#073A78" stroke-width="20" stroke-linecap="square" stroke-linejoin="miter"/>
+            <rect x="368" y="585" width="164" height="64" rx="32" fill="#041E42"/>
+            <circle cx="400" cy="617" r="24" fill="#2FA84F" stroke="white" stroke-width="8"/>
+            <circle cx="450" cy="617" r="24" fill="#F5A914" stroke="white" stroke-width="8"/>
+            <circle cx="500" cy="617" r="24" fill="#D93030" stroke="white" stroke-width="8"/>
+          </g>
+        </svg>
+
+        <div>
+          <h1>VIGOR</h1>
+          <p>Visual Integrated Governance<br />& Overlap Registry</p>
+        </div>
+      </div>
+
+      <p class="menu-label">Menu</p>
+
+      <nav class="nav">
+        <a href="Personalestart.html">Hjem</a>
+        <a href="#" class="active">Borgere <span class="badge" id="navCitizenCount">0</span></a>
+        <a href="#">Overlap <span class="badge">3</span></a>
+        <a href="#">Arbejdstelefoner</a>
+        <a href="#">Statistik</a>
+        <a href="#">Brugere</a>
+      </nav>
+
+      <section class="user-card">
+        <strong>VIGOR Admin</strong>
+        Rolle: Leder<br />
+        Aktiv vagt: Dagvagt
+        <button class="logout" onclick="location.href='login.html'">Log ud</button>
+      </section>
+    </aside>
+
+    <section class="content">
+      <header class="topbar">
+        <div class="page-title">
+          <div class="eyebrow">Borgeroverblik</div>
+          <h2>Borgeroversigt</h2>
+          <p>Hurtigt overblik over borgere, status, medicin og aktuelle opmærksomhedspunkter.</p>
+        </div>
+
+        <div class="session-pills">
+          <span class="pill">Bruger: <strong>VIGOR Admin</strong></span>
+          <span class="pill">Afdeling: <strong>Min afdeling</strong></span>
+          <span class="pill">Aktiv vagt: <strong>Dagvagt</strong></span>
+        </div>
+      </header>
+
+      <section class="toolbar">
+        <div class="search-box">
+          <div class="search-icon">⌕</div>
+          <div>
+            <label for="searchInput">Søg borger</label>
+            <input id="searchInput" type="search" placeholder="Søg efter navn eller status..." autocomplete="off" />
+          </div>
+        </div>
+
+        <div class="quick-status">
+          <button class="status-filter active" data-filter="all">Alle</button>
+          <button class="status-filter" data-filter="yellow"><span class="dot yellow"></span> Gul</button>
+          <button class="status-filter" data-filter="green"><span class="dot green"></span> Grøn</button>
+          <button class="status-filter" data-filter="red"><span class="dot red"></span> Rød</button>
+        </div>
+      </section>
+
+      <section class="overview">
+        <section class="citizen-panel">
+          <header class="panel-header">
+            <div>
+              <h3>Borgere på afdelingen</h3>
+              <span id="resultText">Viser alle borgere</span>
+            </div>
+          </header>
+
+          <div class="citizen-grid" id="citizenGrid"></div>
+        </section>
+
+        <aside class="side-panel">
+          <header class="panel-header">
+            <div>
+              <h3>Vagtens status</h3>
+              <span>Samlet overblik for aktiv vagt</span>
+            </div>
+          </header>
+
+          <div class="side-body">
+            <article class="summary-card">
+              <div>
+                <div class="label">Borgere i visning</div>
+                <div class="value" id="totalCount">0</div>
+              </div>
+            </article>
+            <article class="summary-card yellow">
+              <div>
+                <div class="label">Kræver opmærksomhed</div>
+                <div class="value" id="yellowCount">0</div>
+              </div>
+            </article>
+            <article class="summary-card green">
+              <div>
+                <div class="label">Stabile</div>
+                <div class="value" id="greenCount">0</div>
+              </div>
+            </article>
+            <article class="summary-card red">
+              <div>
+                <div class="label">Kritiske</div>
+                <div class="value" id="redCount">0</div>
+              </div>
+            </article>
+
+            <div class="task-card">
+              <strong>Næste handling</strong>
+              <span>Åbn en borger for at se detaljer, historik, medicin og opgaver.</span>
+            </div>
+
+            <div class="task-card">
+              <strong>Driftsnote</strong>
+              <span>Statusfarver bruges som hurtigt overblik ved vagtskifte.</span>
+            </div>
+          </div>
+        </aside>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const citizens = [
+      {
+        id: 1,
+        name: "Jens Hansen",
+        status: "yellow",
+        statusText: "Gul",
+        assigned: "Ingen aktiv tildeling",
+        medication: "Fast medicin givet",
+        task: "Observation efter aftensmad",
+        note: "Skal støttes roligt ved skift i rutiner."
+      },
+      {
+        id: 2,
+        name: "Anna Nielsen",
+        status: "yellow",
+        statusText: "Gul",
+        assigned: "Anna Nielsen",
+        medication: "Medicin mangler kl. 20:00",
+        task: "Opfølgning i aftenvagt",
+        note: "Kræver ekstra opmærksomhed i overgang."
+      },
+      {
+        id: 3,
+        name: "Søren Kjeldsen",
+        status: "green",
+        statusText: "Grøn",
+        assigned: "VIGOR Admin",
+        medication: "Vitamin D mangler kl. 20:00",
+        task: "Ingen åbne opgaver",
+        note: "Normal drift."
+      },
+      {
+        id: 4,
+        name: "Maria Lund",
+        status: "red",
+        statusText: "Rød",
+        assigned: "Louise Berg og Mads Poulsen",
+        medication: "Kræver opfølgning",
+        task: "Følg op straks",
+        note: "Kritisk status - faglig vurdering nødvendig."
+      },
+      {
+        id: 5,
+        name: "Peter Mikkelsen",
+        status: "green",
+        statusText: "Grøn",
+        assigned: "Louise Berg",
+        medication: "Fast medicin givet",
+        task: "Ingen åbne opgaver",
+        note: "Normal drift."
+      },
+      {
+        id: 6,
+        name: "Line Sørensen",
+        status: "green",
+        statusText: "Grøn",
+        assigned: "Mads Poulsen",
+        medication: "Fast medicin givet",
+        task: "Klargør kaffe til næste hold",
+        note: "Stabil."
+      }
+    ];
+
+    const statusLabels = {
+      red: "Rød",
+      yellow: "Gul",
+      green: "Grøn"
+    };
+
+    let activeFilter = "all";
+
+    const searchInput = document.getElementById("searchInput");
+    const filterButtons = Array.from(document.querySelectorAll(".status-filter"));
+
+    function render() {
+      const query = searchInput.value.trim().toLowerCase();
+
+      const filtered = citizens.filter(citizen => {
+        const matchesQuery =
+          citizen.name.toLowerCase().includes(query) ||
+          citizen.statusText.toLowerCase().includes(query) ||
+          citizen.assigned.toLowerCase().includes(query);
+
+        const matchesFilter = activeFilter === "all" || citizen.status === activeFilter;
+
+        return matchesQuery && matchesFilter;
+      });
+
+      document.getElementById("citizenGrid").innerHTML = filtered.map(citizen => `
+        <article class="citizen-card status-${citizen.status}">
+          <div class="citizen-head">
+            <div>
+              <h4>${citizen.name}</h4>
+              <div class="citizen-meta">Borger-ID: ${citizen.id} · Tildelt: ${citizen.assigned}</div>
+            </div>
+            <span class="status-badge">${statusLabels[citizen.status]}</span>
+          </div>
+
+          <div class="citizen-info">
+            <div class="mini">
+              <div class="label">Medicin</div>
+              <div class="value">${citizen.medication}</div>
+            </div>
+            <div class="mini">
+              <div class="label">Opgave</div>
+              <div class="value">${citizen.task}</div>
+            </div>
+            <div class="mini">
+              <div class="label">Status</div>
+              <div class="value">${citizen.statusText}</div>
+            </div>
+          </div>
+
+          <div class="citizen-actions">
+            <div class="last-note">${citizen.note}</div>
+            <button class="open-btn" onclick="alert('Demo: Åbner borgerdetalje for ${citizen.name}')">Åbn</button>
+          </div>
+        </article>
+      `).join("");
+
+      const yellowCount = citizens.filter(c => c.status === "yellow").length;
+      const greenCount = citizens.filter(c => c.status === "green").length;
+      const redCount = citizens.filter(c => c.status === "red").length;
+
+      document.getElementById("navCitizenCount").textContent = citizens.length;
+      document.getElementById("totalCount").textContent = filtered.length;
+      document.getElementById("yellowCount").textContent = yellowCount;
+      document.getElementById("greenCount").textContent = greenCount;
+      document.getElementById("redCount").textContent = redCount;
+      document.getElementById("resultText").textContent =
+        filtered.length === citizens.length
+          ? "Viser alle borgere"
+          : `Viser ${filtered.length} af ${citizens.length} borgere`;
+    }
+
+    filterButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        activeFilter = button.dataset.filter;
+        filterButtons.forEach(btn => btn.classList.remove("active"));
+        button.classList.add("active");
+        render();
+      });
+    });
+
+    searchInput.addEventListener("input", render);
+
+    render();
+  </script>
+</body>
+</html>

@@ -12,6 +12,7 @@ namespace VIGOR.MAUI.Services
         {
             return role.Name switch
             {
+                "Superbruger" => "/admin",
                 "Leder" => "/admin",
                 "Vagtansvarlig" => "/shift/select",
                 "Personale" => "/shift/select",

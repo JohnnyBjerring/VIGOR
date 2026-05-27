@@ -36,6 +36,15 @@ namespace VIGOR.Web.Services
                 };
             }
 
+            if (IsAdministrativelyDeactivated(user))
+            {
+                return new AuthResult
+                {
+                    Status = AuthStatus.Denied,
+                    Message = "Brugeren er deaktiveret. Kontakt administrator."
+                };
+            }
+
             // 2. PasswordSignInAsync (CheckPassword – Blazor kan ikke sætte cookies)
             var signInResult = await _signInManager.CheckPasswordSignInAsync(user, password, lockoutOnFailure: true);
 
@@ -68,8 +77,12 @@ namespace VIGOR.Web.Services
                 };
             }
 
-            // Én rolle pr. bruger
-            var roleName = roles.First();
+            // Brug den højest rangerede rolle som start-/hovedrolle.
+            // Det sikrer fx at en ren Superbruger lander på adminområdet og ikke vagtvalg.
+            var roleName = roles
+                .OrderByDescending(GetRoleLevel)
+                .ThenBy(roleName => roleName)
+                .First();
             var role = MapToRole(roleName);
 
             return new AuthResult
@@ -81,19 +94,32 @@ namespace VIGOR.Web.Services
             };
         }
 
+        private static bool IsAdministrativelyDeactivated(IdentityUser user)
+        {
+            // UC13 deaktiverer brugere via LockoutEnd = DateTimeOffset.MaxValue.
+            // ASP.NET Identity rapporterer dette som IsLockedOut, men UX-beskeden skal
+            // skelne mellem midlertidig lockout efter fejl og reel administrativ deaktivering.
+            return user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow.AddYears(10);
+        }
+
         private static Role MapToRole(string roleName)
         {
-            var roleLevels = new Dictionary<string, int>
-            {
-                { "Leder", 3 },
-                { "Vagtansvarlig", 2 },
-                { "Personale", 1 }
-            };
-
             return new Role
             {
                 Name = roleName,
-                Level = roleLevels.GetValueOrDefault(roleName, 0)
+                Level = GetRoleLevel(roleName)
+            };
+        }
+
+        private static int GetRoleLevel(string? roleName)
+        {
+            return roleName switch
+            {
+                "Superbruger" => 4,
+                "Leder" => 3,
+                "Vagtansvarlig" => 2,
+                "Personale" => 1,
+                _ => 0
             };
         }
     }

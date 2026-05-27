@@ -52,5 +52,52 @@ namespace VIGOR.Web.Services
             string? userDisplayNameSnapshot,
             ShiftType shiftType,
             CancellationToken cancellationToken = default);
+
+        Task LogNoteCreatedAsync(
+            int citizenId,
+            int noteId,
+            int departmentId,
+            string userId,
+            string? userDisplayNameSnapshot,
+            ShiftType shiftType,
+            CancellationToken cancellationToken = default);
+
+        Task LogCitizenTaskCreatedAsync(
+            int citizenId,
+            int citizenTaskId,
+            string title,
+            int departmentId,
+            string userId,
+            string? userDisplayNameSnapshot,
+            ShiftType shiftType,
+            CancellationToken cancellationToken = default);
+
+        Task LogCitizenTaskCompletedAsync(
+            int citizenId,
+            int citizenTaskId,
+            string title,
+            int departmentId,
+            string userId,
+            string? userDisplayNameSnapshot,
+            ShiftType shiftType,
+            CancellationToken cancellationToken = default);
+
+        Task LogStaffAssignedToCitizenAsync(
+            int citizenId,
+            int citizenStaffAssignmentId,
+            string employeeName,
+            int departmentId,
+            string userId,
+            string? userDisplayNameSnapshot,
+            CancellationToken cancellationToken = default);
+
+        Task LogStaffUnassignedFromCitizenAsync(
+            int citizenId,
+            int citizenStaffAssignmentId,
+            string employeeName,
+            int departmentId,
+            string userId,
+            string? userDisplayNameSnapshot,
+            CancellationToken cancellationToken = default);
     }
 }

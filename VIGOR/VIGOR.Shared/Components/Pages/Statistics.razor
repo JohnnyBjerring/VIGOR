@@ -1,0 +1,176 @@
+@page "/statistics"
+@using Microsoft.AspNetCore.Authorization
+@attribute [Authorize(Roles = "Leder,Superbruger")]
+@using System.Globalization
+@using VIGOR.Shared.DTOs
+@inject VIGOR.Shared.Interfaces.Services.IStatisticsApi StatisticsApi
+
+<PageTitle>Statistik – VIGOR</PageTitle>
+
+<section class="vigor-page statistics-page">
+    <header class="vigor-page-hero compact">
+        <div><div class="vigor-eyebrow">Rapporter</div><h1>Statistik</h1></div>
+        @if (_statistics != null)
+        {
+            <div class="vigor-context-pills"><span class="vigor-pill">Omfang: <strong>@_statistics.ScopeDisplayName</strong></span><span class="vigor-pill">Adgang: <strong>@_statistics.AccessLevelDisplayName</strong></span><span class="vigor-pill">Opdateret: <strong>@FormatDateTime(_statistics.GeneratedAtUtc)</strong></span></div>
+        }
+    </header>
+
+    <section class="vigor-panel filters-panel">
+        <div class="vigor-form-grid period-grid">
+            <div><label for="statisticsFromDate">Fra dato</label><input id="statisticsFromDate" type="date" class="form-control" value="@_fromDate" @onchange="OnFromDateChanged" /></div>
+            <div><label for="statisticsToDate">Til dato</label><input id="statisticsToDate" type="date" class="form-control" value="@_toDate" @onchange="OnToDateChanged" /></div>
+            <div class="button-row"><button class="vigor-primary-button" @onclick="LoadStatisticsAsync" disabled="@_loading">@(_loading ? "Opdaterer..." : "Opdater statistik")</button><button class="vigor-secondary-button" @onclick="ResetPeriodAsync" disabled="@_loading">Seneste 7 dage</button></div>
+        </div>
+    </section>
+
+    @if (_error) { <div class="vigor-alert danger" role="alert">@_errorMessage</div> }
+
+    @if (_loading && _statistics == null) { <div class="vigor-panel">Indlæser statistik...</div> }
+    else if (_statistics == null) { <div class="vigor-panel">Der er endnu ikke hentet statistik.</div> }
+    else
+    {
+        var maxValue = Math.Max(1, new[] { _statistics.StatusChangeCount, _statistics.FixedMedicationRegistrationCount, _statistics.PnMedicationRegistrationCount, _statistics.TaskCreatedCount, _statistics.TaskCompletedCount, _statistics.OpenTaskCount }.Max());
+
+        <section class="stats-layout">
+            <div class="stat-cards">
+                <article><span>Statusændringer</span><strong>@_statistics.StatusChangeCount</strong></article>
+                <article><span>Fast medicin</span><strong>@_statistics.FixedMedicationRegistrationCount</strong></article>
+                <article><span>PN-medicin</span><strong>@_statistics.PnMedicationRegistrationCount</strong></article>
+                <article><span>Opgaver oprettet</span><strong>@_statistics.TaskCreatedCount</strong></article>
+                <article><span>Opgaver afsluttet</span><strong>@_statistics.TaskCompletedCount</strong></article>
+                <article><span>Åbne opgaver</span><strong>@_statistics.OpenTaskCount</strong></article>
+            </div>
+            <section class="vigor-panel chart-panel"><div class="vigor-panel-head"><div><h2>Aktivitetsgraf</h2></div></div>
+                <div class="bar-chart">
+                    <div><span>Status</span><b style="width:@GetBarWidth(_statistics.StatusChangeCount, maxValue)"></b><strong>@_statistics.StatusChangeCount</strong></div>
+                    <div><span>Fast medicin</span><b style="width:@GetBarWidth(_statistics.FixedMedicationRegistrationCount, maxValue)"></b><strong>@_statistics.FixedMedicationRegistrationCount</strong></div>
+                    <div><span>PN</span><b style="width:@GetBarWidth(_statistics.PnMedicationRegistrationCount, maxValue)"></b><strong>@_statistics.PnMedicationRegistrationCount</strong></div>
+                    <div><span>Opgaver oprettet</span><b style="width:@GetBarWidth(_statistics.TaskCreatedCount, maxValue)"></b><strong>@_statistics.TaskCreatedCount</strong></div>
+                    <div><span>Opgaver afsluttet</span><b style="width:@GetBarWidth(_statistics.TaskCompletedCount, maxValue)"></b><strong>@_statistics.TaskCompletedCount</strong></div>
+                    <div><span>Åbne opgaver</span><b style="width:@GetBarWidth(_statistics.OpenTaskCount, maxValue)"></b><strong>@_statistics.OpenTaskCount</strong></div>
+                </div>
+            </section>
+        </section>
+    }
+</section>
+
+@code {
+    private StatisticsOverviewDto? _statistics;
+    private bool _loading;
+    private bool _error;
+    private string _errorMessage = string.Empty;
+    private string _fromDate = string.Empty;
+    private string _toDate = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SetDefaultPeriod();
+        await LoadStatisticsAsync();
+    }
+
+    private async Task LoadStatisticsAsync()
+    {
+        _loading = true;
+        _error = false;
+        _errorMessage = string.Empty;
+
+        try
+        {
+            var fromUtc = ParseDateAsLocalStart(_fromDate);
+            var toUtc = ParseDateAsLocalExclusiveEnd(_toDate);
+
+            if (fromUtc.HasValue && toUtc.HasValue && fromUtc.Value >= toUtc.Value)
+            {
+                _error = true;
+                _errorMessage = "Fra dato skal ligge før eller på til dato.";
+                return;
+            }
+
+            _statistics = await StatisticsApi.GetStatisticsAsync(fromUtc, toUtc);
+        }
+        catch (Exception ex)
+        {
+            _error = true;
+            _errorMessage = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task ResetPeriodAsync()
+    {
+        SetDefaultPeriod();
+        await LoadStatisticsAsync();
+    }
+
+    private void SetDefaultPeriod()
+    {
+        var today = DateTime.Today;
+        _fromDate = today.AddDays(-7).ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        _toDate = today.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+    }
+
+    private void OnFromDateChanged(ChangeEventArgs args)
+    {
+        _fromDate = args.Value?.ToString() ?? string.Empty;
+    }
+
+    private void OnToDateChanged(ChangeEventArgs args)
+    {
+        _toDate = args.Value?.ToString() ?? string.Empty;
+    }
+
+    private static DateTime? ParseDateAsLocalStart(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return DateTime.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
+            ? date.Date.ToUniversalTime()
+            : null;
+    }
+
+    private static DateTime? ParseDateAsLocalExclusiveEnd(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return null;
+        }
+
+        return DateTime.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date)
+            ? date.Date.AddDays(1).ToUniversalTime()
+            : null;
+    }
+
+    private static string FormatDateTime(DateTime value)
+    {
+        return value.ToLocalTime().ToString("dd-MM-yyyy HH:mm", CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatPeriod(StatisticsOverviewDto statistics)
+    {
+        if (statistics.FromUtc == null && statistics.ToUtc == null)
+        {
+            return "Alle registrerede data.";
+        }
+
+        var from = statistics.FromUtc?.ToLocalTime().ToString("dd-MM-yyyy", CultureInfo.InvariantCulture) ?? "første registrering";
+        var to = statistics.ToUtc?.ToLocalTime().AddDays(-1).ToString("dd-MM-yyyy", CultureInfo.InvariantCulture) ?? "nu";
+        return $"{from} til {to}";
+    }
+
+
+    private static string GetBarWidth(int value, int maxValue)
+    {
+        var percentage = maxValue <= 0 ? 0 : Math.Max(6, (int)Math.Round(value * 100.0 / maxValue));
+        return $"{percentage}%";
+    }
+
+
+
+}

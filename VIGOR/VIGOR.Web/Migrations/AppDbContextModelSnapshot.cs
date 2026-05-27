@@ -76,6 +76,246 @@ namespace VIGOR.Web.Migrations
                     b.ToTable("AuditEvents");
                 });
 
+
+            modelBuilder.Entity("VIGOR.Shared.Models.CitizenTask", b =>
+                {
+                    b.Property<int>("CitizenTaskId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CitizenId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("CompletedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CompletedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsCompleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false);
+
+                    b.Property<int>("ShiftType")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("CitizenTaskId");
+
+                    b.HasIndex("CitizenId", "IsCompleted", "CreatedAtUtc");
+
+                    b.HasIndex("DepartmentId", "IsCompleted", "CreatedAtUtc");
+
+                    b.ToTable("CitizenTasks");
+                });
+
+
+            modelBuilder.Entity("VIGOR.Shared.Models.CitizenStaffAssignment", b =>
+                {
+                    b.Property<int>("CitizenStaffAssignmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("AssignedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AssignedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("CitizenId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("EmployeeNameSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
+                    b.Property<DateTime?>("UnassignedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UnassignedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("CitizenStaffAssignmentId");
+
+                    b.HasIndex("CitizenId", "IsActive", "AssignedAtUtc");
+
+                    b.HasIndex("DepartmentId", "IsActive", "AssignedAtUtc");
+
+                    b.HasIndex("EmployeeId", "IsActive");
+
+                    b.ToTable("CitizenStaffAssignments");
+                });
+
+
+
+            modelBuilder.Entity("VIGOR.Shared.Models.Note", b =>
+                {
+                    b.Property<int>("NoteId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("CitizenId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("CreatedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("ShiftType")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("NoteId");
+
+                    b.HasIndex("CitizenId", "CreatedAtUtc");
+
+                    b.HasIndex("DepartmentId", "CreatedAtUtc");
+
+                    b.ToTable("Notes");
+                });
+
+            modelBuilder.Entity("VIGOR.Shared.Models.WorkPhone", b =>
+                {
+                    b.Property<int>("WorkPhoneId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("CreatedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("WorkPhoneId");
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique();
+
+                    b.ToTable("WorkPhones");
+                });
+
+            modelBuilder.Entity("VIGOR.Shared.Models.PhoneAssignment", b =>
+                {
+                    b.Property<int>("PhoneAssignmentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("AssignedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AssignedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(450)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("DepartmentId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("EmployeeNameSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsActive")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(true);
+
+                    b.Property<string>("PhoneLabelSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PhoneNumberSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("UnassignedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UnassignedByUserId")
+                        .HasMaxLength(450)
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("WorkPhoneId")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("PhoneAssignmentId");
+
+                    b.HasIndex("DepartmentId", "IsActive", "AssignedAtUtc");
+
+                    b.HasIndex("EmployeeId", "IsActive");
+
+                    b.HasIndex("WorkPhoneId", "IsActive");
+
+                    b.ToTable("PhoneAssignments");
+                });
+
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
                     b.Property<string>("Id")
@@ -357,6 +597,40 @@ namespace VIGOR.Web.Migrations
                         .IsRequired();
                 });
 
+
+
+
+            modelBuilder.Entity("VIGOR.Shared.Models.CitizenTask", b =>
+                {
+                    b.HasOne("VIGOR.Shared.Models.Citizen", null)
+                        .WithMany()
+                        .HasForeignKey("CitizenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+            modelBuilder.Entity("VIGOR.Shared.Models.CitizenStaffAssignment", b =>
+                {
+                    b.HasOne("VIGOR.Shared.Models.Citizen", null)
+                        .WithMany()
+                        .HasForeignKey("CitizenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("VIGOR.Shared.Models.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+            modelBuilder.Entity("VIGOR.Shared.Models.Note", b =>
+                {
+                    b.HasOne("VIGOR.Shared.Models.Citizen", null)
+                        .WithMany()
+                        .HasForeignKey("CitizenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("VIGOR.Shared.Models.PnMedication", b =>
                 {
                     b.HasOne("VIGOR.Shared.Models.Citizen", null)
@@ -365,6 +639,22 @@ namespace VIGOR.Web.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
+
+            modelBuilder.Entity("VIGOR.Shared.Models.PhoneAssignment", b =>
+                {
+                    b.HasOne("VIGOR.Shared.Models.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("VIGOR.Shared.Models.WorkPhone", null)
+                        .WithMany()
+                        .HasForeignKey("WorkPhoneId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
 
             modelBuilder.Entity("VIGOR.Shared.Models.Department", b =>
                 {

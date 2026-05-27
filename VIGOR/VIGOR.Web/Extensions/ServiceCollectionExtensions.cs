@@ -85,6 +85,14 @@ namespace VIGOR.Web.Extensions
             services.AddScoped<IAuditService, AuditService>();
             services.AddScoped<IFixedMedicationService, FixedMedicationService>();
             services.AddScoped<IPnMedicationService, PnMedicationService>();
+            services.AddScoped<INoteService, NoteService>();
+            services.AddScoped<ICitizenTaskService, CitizenTaskService>();
+            services.AddScoped<IOverlapService, OverlapService>();
+            services.AddScoped<IStaffAssignmentService, StaffAssignmentService>();
+            services.AddScoped<IUserAdminService, UserAdminService>();
+            services.AddScoped<IPublicOverviewService, PublicOverviewService>();
+            services.AddScoped<IWorkPhoneService, WorkPhoneService>();
+            services.AddScoped<IStatisticsService, StatisticsService>();
             services.AddScoped<IShiftSelectionService, ShiftSelectionService>();
             services.AddScoped<IActiveShiftContextState, ActiveShiftContextState>();
 
